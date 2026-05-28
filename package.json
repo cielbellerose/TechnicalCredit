@@ -16,8 +16,27 @@
       {
         "command": "technicalcredit.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "technicalcredit.analyseForTC",
+        "title": "Analyse for TC"
       }
-    ]
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "technicalcredit.analyseForTC",
+          "when": "false"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "technicalcredit.analyseForTC",
+          "group": "navigation",
+          "when": "editorTextFocus"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
