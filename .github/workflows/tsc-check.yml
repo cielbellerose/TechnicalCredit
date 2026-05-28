@@ -1,0 +1,19 @@
+name: TypeScript Check
+on:
+  pull_request:
+jobs:
+  run-tsc-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: preview
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+      - run: npm ci
+      - name: Run tsc check
+        run: npm run tsc:check
