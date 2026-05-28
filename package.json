@@ -29,8 +29,9 @@
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
-    "lint": "eslint src",
     "test": "vscode-test",
+    "lint:check": "eslint src",
+    "lint:fix": "eslint src --fix",
     "tsc:check": "tsc --noEmit"
   },
   "devDependencies": {
