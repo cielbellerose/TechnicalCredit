@@ -23,12 +23,6 @@
       }
     ],
     "menus": {
-      "commandPalette": [
-        {
-          "command": "technicalcredit.analyseForTC",
-          "when": "false"
-        }
-      ],
       "editor/context": [
         {
           "command": "technicalcredit.analyseForTC",
