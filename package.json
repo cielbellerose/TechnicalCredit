@@ -30,7 +30,7 @@
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "test": "vscode-test",
-    "lint:check": "eslint src",
+    "lint:check": "eslint src --max-warnings=0",
     "lint:fix": "eslint src --fix",
     "tsc:check": "tsc --noEmit"
   },
