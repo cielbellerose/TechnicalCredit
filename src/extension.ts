@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import Anthropic from '@anthropic-ai/sdk';
 import dotenv from 'dotenv';
 import * as path from 'path';
+import { registerAnalyseForTC } from "./commands/analyseForTC";
+
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const client = new Anthropic({
@@ -26,7 +28,8 @@ export async function activate(_context: vscode.ExtensionContext) {
   } catch (e) {
 	console.error('Claude error:', e);
   }
+  
+  registerAnalyseForTC(context)
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
