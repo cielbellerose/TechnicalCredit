@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
-import { buildContext } from "../context/buildContext";
-import { SYSTEM_PROMPT } from "../context/systemPrompt";
-import { claude } from "../claude";
+
+import { buildContext } from "@/context/buildContext";
+import { SYSTEM_PROMPT } from "@/context/systemPrompt";
+import { claude } from "@/claude";
 
 export function registerAnalyseForTC(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand(
