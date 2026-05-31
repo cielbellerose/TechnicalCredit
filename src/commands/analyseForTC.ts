@@ -48,7 +48,10 @@ export function registerAnalyseForTC(context: vscode.ExtensionContext) {
               model: "claude-sonnet-4-20250514",
               max_tokens: 1024,
               system: SYSTEM_PROMPT,
-              messages: [{ role: "user", content: userMessage }],
+              messages: [
+                { role: "user", content: userMessage },
+                { role: "assistant", content: "{" },
+              ],
             });
 
             const raw = response.content
@@ -56,7 +59,7 @@ export function registerAnalyseForTC(context: vscode.ExtensionContext) {
               .map((b) => b.text)
               .join("");
 
-            const result = JSON.parse(raw);
+            const result = JSON.parse("{" + raw);
 
             if (result.is_tc_candidate) {
               vscode.window.showInformationMessage(
