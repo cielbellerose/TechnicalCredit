@@ -1,8 +1,8 @@
-// MockTest.java — sample code the test suite reads as fixtures.
+// MockTest.java - sample code the test suite reads as fixtures.
 //
-// Each top-level type here is catalogued in h1expectations.ts with its
-// expected H1 verdict, and h1.test.ts asserts this file declares them.
-// buildContextCore.test.ts also assembles context from this file.
+// Each top-level type here is catalogued in the matching heuristic test
+// (e.g. h1.test.ts) with its expected verdict, and that test extracts the
+// construct from this file. buildContextCore.test.ts also reads this file.
 //
 // Grouped by heuristic below; grow this file as new heuristics are added.
 

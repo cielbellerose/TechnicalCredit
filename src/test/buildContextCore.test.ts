@@ -1,7 +1,5 @@
-import * as fs from "fs";
-import * as path from "path";
-
 import { buildContextFromSource } from "../context/buildContextCore";
+import { loadMock } from "./support/mockSource";
 
 /**
  * Tests buildContextFromSource (buildContextCore.ts) — the pure, vscode-free
@@ -13,10 +11,7 @@ import { buildContextFromSource } from "../context/buildContextCore";
  * concern, covered in the per-heuristic fixture tests (e.g. h1.test.ts).
  */
 
-const MOCK = fs.readFileSync(
-  path.join(__dirname, "mockCode", "MockTest.java"),
-  "utf8",
-);
+const MOCK = loadMock("MockTest.java");
 
 describe("buildContextFromSource — assembly against MockTest.java", () => {
   test("keeps the whole file (under threshold) and finds no package/imports", () => {
