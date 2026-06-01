@@ -1,52 +1,41 @@
 /**
- * Test cases for the H1 detection prompt (interface with no fields →
- * abstraction).
+ * H1 expectations: interface with no fields → abstraction.
  *
- * Cases simulate the data sent to Claude when `Analyse for TC` is invoked. 
- * 
- * The same constructs also appear together in MockTest.java
- * for anyone who wants the realistic-file view — but THIS file is the
- * authoritative test driver.
+ * This catalog names the constructs in MockTest.java that are H1 technical-
+ * credit candidates (positives) and those that are not (negatives). The Java
+ * itself lives in MockTest.java — the source of truth for sample code — and
+ * h1.test.ts asserts that every name below is declared there, with both
+ * polarities represented.
+ *
+ * As new heuristics land, add a sibling `<heuristic>expectations.ts` catalog
+ * and grow the mock code files with matching positive/negative examples.
  */
-export interface H1Case {
-  /** Human-friendly identifier; matches a construct in MockTest.java. */
+export interface H1Expectation {
+  /** Type name exactly as declared in MockTest.java. */
   name: string;
-  /** One line explaining why this case is here. Shows up in test names. */
   rationale: string;
-  /** The Java source that will be passed to detectH1. */
-  code: string;
   /**
-   * The minimum we commit to about detectH1's output for `code`.
-   * Other fields exist on the response but aren't pinned here while the
-   * prompt's output format is still being designed.
+   * Placeholder detector verdict we expect for this construct once H1 detection
+   * exists. `true` = H1 positive (TC candidate); `false` = negative.
    */
   expected: { is_tc_candidate: boolean };
 }
 
-export const h1Cases: H1Case[] = [
+export const h1Expectations: H1Expectation[] = [
   // --- Positive cases: interfaces with no fields ---
   {
     name: "EventListener",
     rationale: "Single-method interface, no fields — classic abstraction.",
-    code: `interface EventListener {
-    void onEvent();
-}`,
     expected: { is_tc_candidate: true },
   },
   {
     name: "Validator",
     rationale: "Interface with one method and no fields.",
-    code: `interface Validator {
-    boolean validate(String input);
-}`,
     expected: { is_tc_candidate: true },
   },
   {
     name: "Greetable",
     rationale: "Interface with one void method and no fields.",
-    code: `interface Greetable {
-    void greet();
-}`,
     expected: { is_tc_candidate: true },
   },
 
@@ -54,20 +43,11 @@ export const h1Cases: H1Case[] = [
   {
     name: "Calculator",
     rationale: "Concrete class — not an interface, so not H1.",
-    code: `class Calculator {
-    public int add(int a, int b) {
-        return a + b;
-    }
-}`,
     expected: { is_tc_candidate: false },
   },
   {
     name: "Constants",
     rationale: "Is an interface, but it has fields — H1 requires no fields.",
-    code: `interface Constants {
-    int MAX_RETRIES = 3;
-    String DEFAULT_CURRENCY = "USD";
-}`,
     expected: { is_tc_candidate: false },
   },
 ];

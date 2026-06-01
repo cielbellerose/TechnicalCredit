@@ -1,8 +1,10 @@
-// MockTest.java — TEST-ONLY file with examples for TechnicalCredit detection.
-// Each top-level type below is annotated in src/test/expectations.ts with
-// its expected H-pattern outcomes.
-
-// Currently this is just an example file for demonstration purposes, as tests currently only use string snippits. 
+// MockTest.java — sample code the test suite reads as fixtures.
+//
+// Each top-level type here is catalogued in h1expectations.ts with its
+// expected H1 verdict, and h1.test.ts asserts this file declares them.
+// buildContextCore.test.ts also assembles context from this file.
+//
+// Grouped by heuristic below; grow this file as new heuristics are added.
 
 public class MockTest {
     public static void main(String[] args) {
@@ -24,7 +26,7 @@ public class MockTest {
     }
 }
 
-// --- Positive H1 cases: interfaces with no fields (abstraction) ---
+// --- H1 positive cases: interfaces with no fields (abstraction) ---
 
 interface EventListener {
     void onEvent();
@@ -38,7 +40,7 @@ interface Greetable {
     void greet();
 }
 
-// --- Negative H1 cases ---
+// --- H1 negative cases ---
 
 class Calculator {
     public int add(int a, int b) {
