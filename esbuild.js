@@ -1,4 +1,5 @@
 const esbuild = require("esbuild");
+const path = require("path");
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
@@ -36,6 +37,7 @@ async function main() {
 		platform: 'node',
 		outfile: 'dist/extension.js',
 		external: ['vscode'],
+		alias: { '@': path.resolve(__dirname, 'src') },
 		logLevel: 'silent',
 		plugins: [
 			/* add to the end of plugins array */
