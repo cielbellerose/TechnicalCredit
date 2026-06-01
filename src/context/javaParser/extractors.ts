@@ -18,7 +18,7 @@ export function extractClassMetrics(decl: Node, importLines: string[]): Construc
 
   const fields = fieldNodes(body).map((f) => {
     const mods = getModifiers(f);
-    const isFinal = mods?.namedChildren.some((m) => m.type === "modifier" && m.text === "final") ?? false;
+    const isFinal = mods?.namedChildren.some((m) => m.text === "final") ?? false;
     const declarator = f.namedChildren.find((c) => c.type === "variable_declarator");
     return {
       name: declarator?.childForFieldName("name")?.text ?? "",

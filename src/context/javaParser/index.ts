@@ -6,20 +6,33 @@ import { extractClassMetrics, extractInterfaceMetrics } from "./extractors";
 
 export type { ConstructMetrics } from "./types";
 
-// Memoize the init promise so concurrent callers share the same initialisation.
 let _parserPromise: Promise<Parser> | null = null;
+
+// Must be called once from activate() before any analysis runs.
+// context.extensionPath is the only reliable path in a bundled VS Code extension.
+export function setExtensionPath(extensionPath: string): void {
+  if (_parserPromise) {
+    return;
+  }
+  const wasmDir = path.join(extensionPath, "dist");
+  _parserPromise = initParser(wasmDir);
+}
+
+async function initParser(wasmDir: string): Promise<Parser> {
+  await Parser.init({
+    locateFile: (scriptName: string) => path.join(wasmDir, scriptName),
+  });
+  const Java = await Language.load(path.join(wasmDir, "tree-sitter-java.wasm"));
+  const parser = new Parser();
+  parser.setLanguage(Java);
+  return parser;
+}
 
 function getParser(): Promise<Parser> {
   if (!_parserPromise) {
-    _parserPromise = (async () => {
-      await Parser.init({
-        locateFile: (_name: string) => path.join(__dirname, "web-tree-sitter.wasm"),
-      });
-      const Java = await Language.load(path.join(__dirname, "tree-sitter-java.wasm"));
-      const p = new Parser();
-      p.setLanguage(Java);
-      return p;
-    })();
+    throw new Error(
+      "Java parser not initialized — call setExtensionPath first",
+    );
   }
   return _parserPromise;
 }
@@ -61,10 +74,17 @@ export async function extractMetrics(
       constructType: CONSTRUCT_TYPE_MAP[node.type] ?? "unknown",
       name: node.childForFieldName("name")?.text ?? null,
       annotations: nodeAnnotations(node),
-      classMetrics: node.type === "class_declaration" ? extractClassMetrics(node, importLines) : null,
-      interfaceMetrics: node.type === "interface_declaration" ? extractInterfaceMetrics(node) : null,
+      classMetrics:
+        node.type === "class_declaration"
+          ? extractClassMetrics(node, importLines)
+          : null,
+      interfaceMetrics:
+        node.type === "interface_declaration"
+          ? extractInterfaceMetrics(node)
+          : null,
     };
-  } catch {
+  } catch (e) {
+    console.error("extractMetrics failed:", e);
     return null;
   }
 }

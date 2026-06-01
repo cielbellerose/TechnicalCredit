@@ -4,6 +4,10 @@ import { buildContext } from "@/context/buildContext";
 import { SYSTEM_PROMPT } from "@/context/systemPrompt";
 import { claude } from "@/claude";
 
+const MODEL = "claude-sonnet-4-20250514";
+const MAX_TOKENS = 4096;
+const TIMEOUT_MS = 30_000;
+
 export function registerAnalyseForTC(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand(
     "technicalcredit.analyseForTC",
@@ -48,14 +52,14 @@ export function registerAnalyseForTC(context: vscode.ExtensionContext) {
         async () => {
           try {
             const response = await claude.messages.create({
-              model: "claude-sonnet-4-20250514",
-              max_tokens: 1024,
+              model: MODEL,
+              max_tokens: MAX_TOKENS,
               system: SYSTEM_PROMPT,
               messages: [
                 { role: "user", content: userMessage },
                 { role: "assistant", content: "{" },
               ],
-            });
+            }, { signal: AbortSignal.timeout(TIMEOUT_MS) });
 
             const raw = response.content
               .filter((b) => b.type === "text")
@@ -70,7 +74,7 @@ export function registerAnalyseForTC(context: vscode.ExtensionContext) {
               );
             } else {
               vscode.window.showInformationMessage(
-                `No TC detected: ${result.not_tc_reason}`,
+                `No TC detected: ${result.not_tc_reason ?? "no reason provided"}`,
               );
             }
           } catch (e) {

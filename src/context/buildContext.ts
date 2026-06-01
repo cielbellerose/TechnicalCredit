@@ -52,7 +52,6 @@ export async function buildContext(
     .filter((line) => /^\s*import\s+/.test(line))
     .map((line) => line.trim());
 
-  // For Java: extract additional metrics with tree-sitter
   const constructMetrics =
     document.languageId === "java"
       ? await extractMetrics(fullSource, anchorLine, anchorCol, importLines)
