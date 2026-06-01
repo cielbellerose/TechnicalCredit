@@ -55,6 +55,7 @@
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.3",
+    "@types/emscripten": "^1.41.5",
     "@types/mocha": "^10.0.10",
     "@types/node": "25.x",
     "@types/vscode": "^1.120.0",

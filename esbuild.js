@@ -1,5 +1,6 @@
 const esbuild = require("esbuild");
 const path = require("path");
+const fs = require("fs");
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
@@ -50,6 +51,10 @@ async function main() {
 		await ctx.rebuild();
 		await ctx.dispose();
 	}
+
+	fs.mkdirSync('dist', { recursive: true });
+	fs.copyFileSync('node_modules/web-tree-sitter/web-tree-sitter.wasm', 'dist/web-tree-sitter.wasm');
+	fs.copyFileSync('node_modules/tree-sitter-java/tree-sitter-java.wasm', 'dist/tree-sitter-java.wasm');
 }
 
 main().catch(e => {
