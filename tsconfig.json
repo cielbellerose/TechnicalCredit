@@ -8,6 +8,7 @@
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedParameters": true,
-    "types": ["jest", "node"]
+    "types": ["jest", "node"],
+    "paths": { "@/*": ["./src/*"] }
   }
 }
