@@ -14,7 +14,7 @@ export function registerAnalyseForTC(context: vscode.ExtensionContext) {
         return;
       }
 
-      const tc = buildContext(editor);
+      const tc = await buildContext(editor);
 
       if (!tc.selectedCode.trim()) {
         vscode.window.showErrorMessage(
@@ -30,8 +30,11 @@ export function registerAnalyseForTC(context: vscode.ExtensionContext) {
         tc.importLines.length > 0
           ? `Imports:\n${tc.importLines.join("\n")}`
           : null,
-        `\nSelected code:\n${tc.selectedCode}`,
-        `\nFull file context:\n${tc.fileContent}`,
+        tc.constructMetrics
+          ? `Pre-extracted construct metrics (tree-sitter):\n${JSON.stringify(tc.constructMetrics, null, 2)}`
+          : null,
+        `Selected code:\n${tc.selectedCode}`,
+        `Full file context:\n${tc.fileContent}`,
       ]
         .filter(Boolean)
         .join("\n");
