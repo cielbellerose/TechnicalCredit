@@ -38,23 +38,28 @@ async function main() {
 		platform: 'node',
 		outfile: 'dist/extension.js',
 		external: ['vscode'],
-		alias: { '@': path.resolve(__dirname, 'src') },
+		alias: {
+			'@': path.resolve(__dirname, 'src'),
+			// Force the CJS build — esbuild 0.28 resolves the ESM version by default,
+			// which breaks because import.meta.url becomes undefined in CJS output.
+			'web-tree-sitter': path.resolve(__dirname, 'node_modules/web-tree-sitter/web-tree-sitter.cjs'),
+		},
 		logLevel: 'silent',
 		plugins: [
 			/* add to the end of plugins array */
 			esbuildProblemMatcherPlugin,
 		],
 	});
+	fs.mkdirSync('dist', { recursive: true });
+	fs.copyFileSync('node_modules/web-tree-sitter/web-tree-sitter.wasm', 'dist/web-tree-sitter.wasm');
+	fs.copyFileSync('node_modules/tree-sitter-java/tree-sitter-java.wasm', 'dist/tree-sitter-java.wasm');
+
 	if (watch) {
 		await ctx.watch();
 	} else {
 		await ctx.rebuild();
 		await ctx.dispose();
 	}
-
-	fs.mkdirSync('dist', { recursive: true });
-	fs.copyFileSync('node_modules/web-tree-sitter/web-tree-sitter.wasm', 'dist/web-tree-sitter.wasm');
-	fs.copyFileSync('node_modules/tree-sitter-java/tree-sitter-java.wasm', 'dist/tree-sitter-java.wasm');
 }
 
 main().catch(e => {
