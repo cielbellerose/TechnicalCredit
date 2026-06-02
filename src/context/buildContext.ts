@@ -1,9 +1,9 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
 import {
   buildContextFromSource,
   type TCContext,
-} from "@/context/buildContextCore";
+} from '@/context/buildContextCore';
 
 export function buildContext(editor: vscode.TextEditor): TCContext {
   const document = editor.document;
@@ -12,7 +12,7 @@ export function buildContext(editor: vscode.TextEditor): TCContext {
   const range = selection.isEmpty
     ? document.getWordRangeAtPosition(selection.active)
     : selection;
-  const selectedCode = range ? document.getText(range) : "";
+  const selectedCode = range ? document.getText(range) : '';
 
   const anchorLine = selection.isEmpty
     ? selection.active.line
