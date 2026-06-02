@@ -26,6 +26,14 @@
       {
         "command": "technicalcredit.analyseForTC",
         "title": "Analyse for TC"
+      },
+      {
+        "command": "technicalcredit.acceptTCComment",
+        "title": "Technical Credit: Accept"
+      },
+      {
+        "command": "technicalcredit.dismissTCComment",
+        "title": "Technical Credit: Dismiss"
       }
     ],
     "menus": {
@@ -34,6 +42,16 @@
           "command": "technicalcredit.analyseForTC",
           "group": "navigation",
           "when": "editorTextFocus"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "technicalcredit.acceptTCComment",
+          "when": "false"
+        },
+        {
+          "command": "technicalcredit.dismissTCComment",
+          "when": "false"
         }
       ]
     }

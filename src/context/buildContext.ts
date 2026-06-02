@@ -10,6 +10,8 @@ export function buildContext(editor: vscode.TextEditor): {
   fileContent: string;
   packageDeclaration: string | null;
   importLines: string[];
+  insertLine: number;
+  insertIndent: string;
 } {
   const document = editor.document;
   const selection = editor.selection;
@@ -18,6 +20,11 @@ export function buildContext(editor: vscode.TextEditor): {
     ? editor.document.getWordRangeAtPosition(selection.active)
     : selection;
   const selectedCode = range ? document.getText(range) : "";
+
+  // Where an accepted TC comment should be inserted: the line above the
+  // selection (or word at cursor), matching that line's indentation.
+  const insertLine = range ? range.start.line : selection.active.line;
+  const insertIndent = /^\s*/.exec(document.lineAt(insertLine).text)?.[0] ?? "";
 
   const allLines = document.getText().split("\n");
   const lineCount = allLines.length;
@@ -50,5 +57,7 @@ export function buildContext(editor: vscode.TextEditor): {
     fileContent,
     packageDeclaration,
     importLines,
+    insertLine,
+    insertIndent,
   };
 }
