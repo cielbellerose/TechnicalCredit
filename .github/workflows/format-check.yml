@@ -1,0 +1,18 @@
+name: Formatting Check
+on:
+  pull_request:
+jobs:
+  run-format-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+      - run: npm ci
+      - name: Run formatting check
+        run: npm run format:check
