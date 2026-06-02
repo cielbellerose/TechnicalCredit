@@ -1,5 +1,6 @@
 import { Parser, Language, Node } from "web-tree-sitter";
 import * as path from "path";
+import * as fs from "fs";
 import { ConstructMetrics, DECLARATION_TYPES } from "./types";
 import { nodeAnnotations } from "./helpers";
 import { extractClassMetrics, extractInterfaceMetrics } from "./extractors";
@@ -19,10 +20,22 @@ export function setExtensionPath(extensionPath: string): void {
 }
 
 async function initParser(wasmDir: string): Promise<Parser> {
+  const treeSitterBytes = fs.readFileSync(path.join(wasmDir, "web-tree-sitter.wasm"));
+  const javaBytes = fs.readFileSync(path.join(wasmDir, "tree-sitter-java.wasm"));
+
   await Parser.init({
-    locateFile: (scriptName: string) => path.join(wasmDir, scriptName),
+    instantiateWasm(
+      imports: WebAssembly.Imports,
+      receive: (instance: WebAssembly.Instance, module: WebAssembly.Module) => void,
+    ) {
+      WebAssembly.instantiate(treeSitterBytes, imports).then(
+        (result) => receive(result.instance, result.module),
+      );
+      return {};
+    },
   });
-  const Java = await Language.load(path.join(wasmDir, "tree-sitter-java.wasm"));
+
+  const Java = await Language.load(new Uint8Array(javaBytes));
   const parser = new Parser();
   parser.setLanguage(Java);
   return parser;
