@@ -26,8 +26,8 @@ export interface ContextSource {
   selectedCode: string;
   /** Line used to centre the surrounding-lines window for large files. */
   anchorLine: number;
-  /** Line at which an accepted TC annotation is inserted. */
-  insertLine: number;
+  /** Line at which an accepted TC annotation is inserted (defaults to anchorLine). */
+  insertLine?: number;
 }
 
 /**
@@ -59,7 +59,8 @@ export function buildContextFromSource(src: ContextSource): TCContext {
     .map((line) => line.trim());
 
   // Indentation of the insertion line, so the annotation aligns with the code.
-  const insertIndent = /^\s*/.exec(allLines[src.insertLine] ?? "")?.[0] ?? "";
+  const insertLine = src.insertLine ?? src.anchorLine;
+  const insertIndent = /^\s*/.exec(allLines[insertLine] ?? "")?.[0] ?? "";
 
   return {
     selectedCode: src.selectedCode,
@@ -68,7 +69,7 @@ export function buildContextFromSource(src: ContextSource): TCContext {
     fileContent,
     packageDeclaration,
     importLines,
-    insertLine: src.insertLine,
+    insertLine,
     insertIndent,
   };
 }
