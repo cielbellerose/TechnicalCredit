@@ -18,7 +18,7 @@ export function extractClassMetrics(decl: Node, importLines: string[]): Construc
 
   const fields = fieldNodes(body).map((f) => {
     const mods = getModifiers(f);
-    const isFinal = mods?.namedChildren.some((m) => m.text === "final") ?? false;
+    const isFinal = mods?.children.some((m) => m.text === "final") ?? false;
     const declarator = f.namedChildren.find((c) => c.type === "variable_declarator");
     return {
       name: declarator?.childForFieldName("name")?.text ?? "",
@@ -36,12 +36,7 @@ export function extractClassMetrics(decl: Node, importLines: string[]): Construc
         params?.namedChildren.filter(
           (p) => p.type === "formal_parameter" || p.type === "spread_parameter",
         ) ?? [];
-      const hasAutowired =
-        getModifiers(ctor)?.namedChildren.some(
-          (m) =>
-            (m.type === "annotation" || m.type === "marker_annotation") &&
-            m.childForFieldName("name")?.text === "Autowired",
-        ) ?? false;
+      const hasAutowired = nodeAnnotations(ctor).includes("Autowired");
       return {
         paramCount: paramNodes.length,
         paramTypes: paramNodes.map((p) => getTypeNode(p)?.text ?? ""),
