@@ -3,8 +3,13 @@ import * as vscode from "vscode";
 import { buildContext } from "@/context/buildContext";
 import { SYSTEM_PROMPT } from "@/context/systemPrompt";
 import { claude } from "@/claude";
+import { formatTCComment, TCResult } from "@/comment/formatComment";
+import { PendingAnnotation } from "@/comment/pendingAnnotation";
 
-export function registerAnalyseForTC(context: vscode.ExtensionContext) {
+export function registerAnalyseForTC(
+  context: vscode.ExtensionContext,
+  controller: PendingAnnotation,
+) {
   const disposable = vscode.commands.registerCommand(
     "technicalcredit.analyseForTC",
     async () => {
@@ -59,12 +64,10 @@ export function registerAnalyseForTC(context: vscode.ExtensionContext) {
               .map((b) => b.text)
               .join("");
 
-            const result = JSON.parse("{" + raw);
-
+            const result = JSON.parse("{" + raw) as TCResult;
             if (result.is_tc_candidate) {
-              vscode.window.showInformationMessage(
-                `TC detected (${result.category}, confidence ${result.confidence}/5): ${result.benefit}`,
-              );
+              const comment = formatTCComment(result, tc.insertIndent);
+              await controller.preview(editor, comment, tc.insertLine);
             } else {
               vscode.window.showInformationMessage(
                 `No TC detected: ${result.not_tc_reason}`,
