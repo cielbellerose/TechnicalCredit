@@ -3,14 +3,8 @@ import * as vscode from "vscode";
 import { buildContext } from "@/context/buildContext";
 import { SYSTEM_PROMPT } from "@/context/systemPrompt";
 import { claude } from "@/claude";
-import { formatTCComment } from "@/comment/formatComment";
+import { formatTCComment, TCResult } from "@/comment/formatComment";
 import { PendingAnnotation } from "@/comment/pendingAnnotation";
-
-/** The fields of the model's JSON output that drive control flow here. */
-interface TCResult {
-  is_tc_candidate: boolean;
-  not_tc_reason: string | null;
-}
 
 export function registerAnalyseForTC(
   context: vscode.ExtensionContext,
@@ -70,10 +64,9 @@ export function registerAnalyseForTC(
               .map((b) => b.text)
               .join("");
 
-            const json = "{" + raw;
-            const result = JSON.parse(json) as TCResult;
+            const result = JSON.parse("{" + raw) as TCResult;
             if (result.is_tc_candidate) {
-              const comment = formatTCComment(json, tc.insertIndent);
+              const comment = formatTCComment(result, tc.insertIndent);
               await controller.preview(editor, comment, tc.insertLine);
             } else {
               vscode.window.showInformationMessage(
