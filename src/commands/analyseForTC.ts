@@ -3,8 +3,17 @@ import * as vscode from "vscode";
 import { buildContext } from "@/context/buildContext";
 import { SYSTEM_PROMPT } from "@/context/systemPrompt";
 import { claude } from "@/claude";
+import { formatTCComment, TCResult } from "@/comment/formatComment";
+import { PendingAnnotation } from "@/comment/pendingAnnotation";
 
-export function registerAnalyseForTC(context: vscode.ExtensionContext) {
+const MODEL = "claude-sonnet-4-20250514";
+const MAX_TOKENS = 4096;
+const TIMEOUT_MS = 30_000;
+
+export function registerAnalyseForTC(
+  context: vscode.ExtensionContext,
+  controller: PendingAnnotation,
+) {
   const disposable = vscode.commands.registerCommand(
     "technicalcredit.analyseForTC",
     async () => {
@@ -14,7 +23,7 @@ export function registerAnalyseForTC(context: vscode.ExtensionContext) {
         return;
       }
 
-      const tc = buildContext(editor);
+      const tc = await buildContext(editor);
 
       if (!tc.selectedCode.trim()) {
         vscode.window.showErrorMessage(
@@ -30,8 +39,11 @@ export function registerAnalyseForTC(context: vscode.ExtensionContext) {
         tc.importLines.length > 0
           ? `Imports:\n${tc.importLines.join("\n")}`
           : null,
-        `\nSelected code:\n${tc.selectedCode}`,
-        `\nFull file context:\n${tc.fileContent}`,
+        tc.constructMetrics
+          ? `Pre-extracted construct metrics (tree-sitter):\n${JSON.stringify(tc.constructMetrics, null, 2)}`
+          : null,
+        `Selected code:\n${tc.selectedCode}`,
+        `Full file context:\n${tc.fileContent}`,
       ]
         .filter(Boolean)
         .join("\n");
@@ -45,29 +57,27 @@ export function registerAnalyseForTC(context: vscode.ExtensionContext) {
         async () => {
           try {
             const response = await claude.messages.create({
-              model: "claude-sonnet-4-20250514",
-              max_tokens: 1024,
+              model: MODEL,
+              max_tokens: MAX_TOKENS,
               system: SYSTEM_PROMPT,
               messages: [
                 { role: "user", content: userMessage },
                 { role: "assistant", content: "{" },
               ],
-            });
+            }, { signal: AbortSignal.timeout(TIMEOUT_MS) });
 
             const raw = response.content
               .filter((b) => b.type === "text")
               .map((b) => b.text)
               .join("");
 
-            const result = JSON.parse("{" + raw);
-
+            const result = JSON.parse("{" + raw) as TCResult;
             if (result.is_tc_candidate) {
-              vscode.window.showInformationMessage(
-                `TC detected (${result.category}, confidence ${result.confidence}/5): ${result.benefit}`,
-              );
+              const comment = formatTCComment(result, tc.insertIndent);
+              await controller.preview(editor, comment, tc.insertLine);
             } else {
               vscode.window.showInformationMessage(
-                `No TC detected: ${result.not_tc_reason}`,
+                `No TC detected: ${result.not_tc_reason ?? "no reason provided"}`,
               );
             }
           } catch (e) {
