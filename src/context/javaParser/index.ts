@@ -9,8 +9,7 @@ export type { ConstructMetrics } from './types';
 
 let _parserPromise: Promise<Parser> | null = null;
 
-// Must be called once from activate() before any analysis runs.
-// context.extensionPath is the only reliable path in a bundled VS Code extension.
+/** Initializes the Java parser from the extension's bundled wasm files; must be called once from `activate()` before any analysis runs. */
 export function setExtensionPath(extensionPath: string): void {
   if (_parserPromise) {
     return;
@@ -19,6 +18,7 @@ export function setExtensionPath(extensionPath: string): void {
   _parserPromise = initParser(wasmDir);
 }
 
+/** Loads and configures the tree-sitter parser with the Java grammar, wiring the wasm instantiation callback manually to support the bundled environment. */
 async function initParser(wasmDir: string): Promise<Parser> {
   const treeSitterBytes = fs.readFileSync(
     path.join(wasmDir, 'web-tree-sitter.wasm'),
@@ -48,6 +48,7 @@ async function initParser(wasmDir: string): Promise<Parser> {
   return parser;
 }
 
+/** Returns the initialized parser promise, throwing if `setExtensionPath` was never called. */
 function getParser(): Promise<Parser> {
   if (!_parserPromise) {
     throw new Error(
@@ -65,6 +66,7 @@ const CONSTRUCT_TYPE_MAP: Record<string, ConstructMetrics['constructType']> = {
   field_declaration: 'field',
 };
 
+/** Parses the Java source, walks the AST from the cursor position to the nearest declaration, and returns structural metrics for that construct and its enclosing class. */
 export async function extractMetrics(
   source: string,
   selectionRow: number,

@@ -14,24 +14,12 @@ export interface TcContext extends TCContext {
   insertIndent: string;
 }
 
+/** Builds the full TC context from the active editor state, including Java construct metrics. */
 export async function buildContext(
   editor: vscode.TextEditor,
 ): Promise<TcContext> {
   const document = editor.document;
-  const selection = editor.selection;
-
-  const range = selection.isEmpty
-    ? document.getWordRangeAtPosition(selection.active)
-    : selection;
-  const selectedCode = range ? document.getText(range) : '';
-
-  const anchorLine = selection.isEmpty
-    ? selection.active.line
-    : selection.anchor.line;
-  const anchorCol = selection.isEmpty
-    ? selection.active.character
-    : selection.anchor.character;
-
+  const { selectedCode, anchorLine, anchorCol } = resolveSelection(editor);
   const fullSource = document.getText();
 
   const ctx = buildContextFromSource({
@@ -47,15 +35,51 @@ export async function buildContext(
       ? await extractMetrics(fullSource, anchorLine, anchorCol, ctx.importLines)
       : null;
 
-  const isClassOrInterface =
-    constructMetrics?.constructType === 'class' ||
-    constructMetrics?.constructType === 'interface';
-  const classStartRow = isClassOrInterface
-    ? constructMetrics!.startRow
-    : constructMetrics?.enclosingClassStartRow ?? null;
-  const insertLine = classStartRow ?? anchorLine;
+  const insertLine = resolveInsertLine(constructMetrics, anchorLine);
   const insertIndent =
     document.lineAt(insertLine).text.match(/^\s*/)?.[0] ?? '';
 
   return { ...ctx, constructMetrics, insertLine, insertIndent };
+}
+
+/** Extracts selected code and anchor position from the editor selection or cursor word. */
+function resolveSelection(editor: vscode.TextEditor) {
+  const { document, selection } = editor;
+
+  if (selection.isEmpty) {
+    const range = document.getWordRangeAtPosition(selection.active);
+    return {
+      selectedCode: range ? document.getText(range) : '',
+      anchorLine: selection.active.line,
+      anchorCol: selection.active.character,
+    };
+  }
+
+  return {
+    selectedCode: document.getText(selection),
+    anchorLine: selection.anchor.line,
+    anchorCol: selection.anchor.character,
+  };
+}
+
+/**
+ * Returns the line above which the TC annotation should be inserted.
+ * For class/interface constructs uses their own declaration line; for methods and
+ * fields uses the enclosing class line. Falls back to the cursor anchor line.
+ */
+function resolveInsertLine(
+  constructMetrics: ConstructMetrics | null,
+  anchorLine: number,
+): number {
+  if (!constructMetrics) {
+    return anchorLine;
+  }
+
+  const { constructType, startRow, enclosingClassStartRow } = constructMetrics;
+
+  if (constructType === 'class' || constructType === 'interface') {
+    return startRow;
+  }
+
+  return enclosingClassStartRow ?? anchorLine;
 }
