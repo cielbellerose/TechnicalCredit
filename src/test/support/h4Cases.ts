@@ -36,17 +36,22 @@ export interface H4Case {
    */
   suffixMatch: boolean;
   /**
+   * The H4 signal(s) the name fires — the suffix token(s) from the pattern list
+   * (Adapter|Repository|Gateway|Port|Service|Strategy|Factory|Builder|Policy)
+   * present in the name. Empty when none match, so it lines up with
+   * `suffixMatch: false`. This is the evidence H4 actually keys on.
+   */
+  signals: string[];
+  /**
    * The verdict a careful reviewer would give — the ground truth the live eval
    * compares Claude's output against.
    *
    * `is_tc_candidate` is the primary assertion. `category` is the expected TC
-   * category (null when not a candidate). `confidence` is the 1-5 level we'd
-   * expect; for negatives it is the upper bound we'd tolerate (≤).
+   * category (null when not a candidate).
    */
   expected: {
     is_tc_candidate: boolean;
     category: H4Category | null;
-    confidence: number;
   };
 }
 
@@ -57,28 +62,32 @@ export const h4Cases: H4Case[] = [
     rationale:
       "Gateway suffix; adapts an external payment provider behind the PaymentGateway interface — textbook abstraction seam.",
     suffixMatch: true,
-    expected: { is_tc_candidate: true, category: "abstraction", confidence: 4 },
+    signals: ["Gateway"],
+    expected: { is_tc_candidate: true, category: "reusability" },
   },
   {
     name: "OrderFactory",
     rationale:
       "Factory suffix; centralises Order construction behind named creation methods, decoupling callers from the constructor.",
     suffixMatch: true,
-    expected: { is_tc_candidate: true, category: "abstraction", confidence: 3 },
+    signals: ["Factory"],
+    expected: { is_tc_candidate: true, category: "reusability" },
   },
   {
     name: "PricingStrategy",
     rationale:
       "Strategy suffix; interface for a pluggable pricing algorithm selected at runtime — extension point.",
     suffixMatch: true,
-    expected: { is_tc_candidate: true, category: "abstraction", confidence: 4 },
+    signals: ["Strategy"],
+    expected: { is_tc_candidate: true, category: "reusability" },
   },
   {
     name: "HttpClientBuilder",
     rationale:
       "Builder suffix; fluent, immutable construction of HttpClient — reusable configuration abstraction.",
     suffixMatch: true,
-    expected: { is_tc_candidate: true, category: "abstraction", confidence: 3 },
+    signals: ["Builder"],
+    expected: { is_tc_candidate: true, category: "reusability" },
   },
 
   // --- Negatives ---
@@ -87,13 +96,15 @@ export const h4Cases: H4Case[] = [
     rationale:
       "Service suffix MATCHES, but it is a plain data holder (fields + getters/setters, no behaviour, no abstraction). Precision guard: H4 recall flags the name, the verdict should not.",
     suffixMatch: true,
-    expected: { is_tc_candidate: false, category: null, confidence: 2 },
+    signals: ["Service"],
+    expected: { is_tc_candidate: false, category: null },
   },
   {
     name: "StringUtils",
     rationale:
       "No suffix match (Utils is not in the pattern list); trivial stateless helper — outside H4 entirely.",
     suffixMatch: false,
-    expected: { is_tc_candidate: false, category: null, confidence: 2 },
+    signals: [],
+    expected: { is_tc_candidate: false, category: null },
   },
 ];

@@ -16,7 +16,7 @@ import { H4_SUFFIX_PATTERN, h4Cases } from "./support/h4Cases";
  *      the AccountService precision trap (suffix matches, but not TC).
  *
  * Like h1.test.ts, this only guards the fixtures today. The verdict fields on
- * each case (is_tc_candidate / category / confidence) are documentation for
+ * each case (is_tc_candidate / category) are documentation for
  * now. TODO: once detection is wired, send the extracted code to Claude with
  * SYSTEM_PROMPT and assert against c.expected, recording false positives /
  * negatives (esp. the AccountService precision trap) for prompt iteration.
