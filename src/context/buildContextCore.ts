@@ -37,17 +37,17 @@ export interface ContextSource {
  * @returns The context payload sent on for analysis.
  */
 export function buildContextFromSource(src: ContextSource): TCContext {
-  const allLines = src.fileContent.split("\n");
+  const allLines = src.fileContent.split('\n');
   const lineCount = allLines.length;
 
   // Identify selected lines and what surrounding context to include based on file length
   let fileContent: string;
   if (lineCount <= FILE_LINE_THRESHOLD) {
-    fileContent = allLines.join("\n");
+    fileContent = allLines.join('\n');
   } else {
     const start = Math.max(0, src.anchorLine - SURROUNDING_LINES / 2);
     const end = Math.min(lineCount, src.anchorLine + SURROUNDING_LINES / 2);
-    fileContent = allLines.slice(start, end).join("\n");
+    fileContent = allLines.slice(start, end).join('\n');
   }
 
   const packageDeclaration =
@@ -60,7 +60,7 @@ export function buildContextFromSource(src: ContextSource): TCContext {
 
   // Indentation of the insertion line, so the annotation aligns with the code.
   const insertLine = src.insertLine ?? src.anchorLine;
-  const insertIndent = /^\s*/.exec(allLines[insertLine] ?? "")?.[0] ?? "";
+  const insertIndent = /^\s*/.exec(allLines[insertLine] ?? '')?.[0] ?? '';
 
   return {
     selectedCode: src.selectedCode,

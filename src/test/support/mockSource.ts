@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from 'fs';
+import * as path from 'path';
 
 /**
  * Shared helpers for reading the mock code in src/test/mockCode files.
@@ -10,11 +10,11 @@ import * as path from "path";
  * construct extraction live in one place.
  */
 
-const MOCK_DIR = path.join(__dirname, "..", "mockCode");
+const MOCK_DIR = path.join(__dirname, '..', 'mockCode');
 
 /** Reads a mock source file (e.g. "MockTest.java") from src/test/mockCode. */
 export function loadMock(fileName: string): string {
-  return fs.readFileSync(path.join(MOCK_DIR, fileName), "utf8");
+  return fs.readFileSync(path.join(MOCK_DIR, fileName), 'utf8');
 }
 
 /**
@@ -28,18 +28,23 @@ export function loadMock(fileName: string): string {
 export function extractType(source: string, name: string): string {
   const header = new RegExp(`\\b(?:class|interface|enum|record)\\s+${name}\\b`);
   const match = header.exec(source);
-  if (!match) {return "";}
+  if (!match) {
+    return '';
+  }
 
-  const braceStart = source.indexOf("{", match.index);
-  if (braceStart === -1) {return "";}
+  const braceStart = source.indexOf('{', match.index);
+  if (braceStart === -1) {
+    return '';
+  }
 
   // Walk braces from the opening one until they balance back to zero.
   let depth = 0;
   for (let i = braceStart; i < source.length; i++) {
-    if (source[i] === "{") {depth++;}
-    else if (source[i] === "}" && --depth === 0) {
+    if (source[i] === '{') {
+      depth++;
+    } else if (source[i] === '}' && --depth === 0) {
       return source.slice(match.index, i + 1);
     }
   }
-  return "";
+  return '';
 }

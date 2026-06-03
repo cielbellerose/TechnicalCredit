@@ -1,4 +1,4 @@
-import { loadMock, extractType } from "./support/mockSource";
+import { loadMock, extractType } from './support/mockSource';
 
 /**
  * H1 — interface with no fields → abstraction.
@@ -17,7 +17,7 @@ import { loadMock, extractType } from "./support/mockSource";
  */
 
 // reads MockTest.java for testing
-const MOCK = loadMock("MockTest.java");
+const MOCK = loadMock('MockTest.java');
 
 interface H1Case {
   /** Type name exactly as declared in MockTest.java. */
@@ -31,40 +31,40 @@ interface H1Case {
 const cases: H1Case[] = [
   // --- Positive: interfaces with no fields ---
   {
-    name: "EventListener",
-    rationale: "Single-method interface, no fields — classic abstraction.",
+    name: 'EventListener',
+    rationale: 'Single-method interface, no fields — classic abstraction.',
     expected: { is_tc_candidate: true },
   },
   {
-    name: "Validator",
-    rationale: "Interface with one method and no fields.",
+    name: 'Validator',
+    rationale: 'Interface with one method and no fields.',
     expected: { is_tc_candidate: true },
   },
   {
-    name: "Greetable",
-    rationale: "Interface with one void method and no fields.",
+    name: 'Greetable',
+    rationale: 'Interface with one void method and no fields.',
     expected: { is_tc_candidate: true },
   },
 
   // --- Negative: not an interface, or interface with fields ---
   {
-    name: "Calculator",
-    rationale: "Concrete class — not an interface, so not H1.",
+    name: 'Calculator',
+    rationale: 'Concrete class — not an interface, so not H1.',
     expected: { is_tc_candidate: false },
   },
   {
-    name: "Constants",
-    rationale: "Is an interface, but it has fields — H1 requires no fields.",
+    name: 'Constants',
+    rationale: 'Is an interface, but it has fields — H1 requires no fields.',
     expected: { is_tc_candidate: false },
   },
 ];
 
-describe("H1 — interface with no fields", () => {
+describe('H1 — interface with no fields', () => {
   for (const c of cases) {
-    const polarity = c.expected.is_tc_candidate ? "positive" : "negative";
+    const polarity = c.expected.is_tc_candidate ? 'positive' : 'negative';
     test(`${c.name} (${polarity}) — ${c.rationale}`, () => {
       const code = extractType(MOCK, c.name);
-      expect(code).not.toBe(""); // currently only checks that construct must exist in MockTest.java
+      expect(code).not.toBe(''); // currently only checks that construct must exist in MockTest.java
     });
   }
 });

@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
 interface Pending {
   uri: vscode.Uri;
@@ -24,10 +24,10 @@ export class PendingAnnotation
   constructor() {
     this.decoration = vscode.window.createTextEditorDecorationType({
       isWholeLine: true,
-      fontStyle: "italic",
-      color: new vscode.ThemeColor("editorGhostText.foreground"),
+      fontStyle: 'italic',
+      color: new vscode.ThemeColor('editorGhostText.foreground'),
       backgroundColor: new vscode.ThemeColor(
-        "diffEditor.insertedTextBackground",
+        'diffEditor.insertedTextBackground',
       ),
     });
   }
@@ -49,7 +49,7 @@ export class PendingAnnotation
       builder.insert(new vscode.Position(insertLine, 0), `${text}\n`);
     });
 
-    const lines = text.split("\n");
+    const lines = text.split('\n');
     const range = new vscode.Range(
       insertLine,
       0,
@@ -97,12 +97,12 @@ export class PendingAnnotation
     const anchor = new vscode.Range(pending.range.start, pending.range.start);
     return [
       new vscode.CodeLens(anchor, {
-        title: "$(check) Accept",
-        command: "technicalcredit.acceptTCComment",
+        title: '$(check) Accept',
+        command: 'technicalcredit.acceptTCComment',
       }),
       new vscode.CodeLens(anchor, {
-        title: "$(x) Dismiss",
-        command: "technicalcredit.dismissTCComment",
+        title: '$(x) Dismiss',
+        command: 'technicalcredit.dismissTCComment',
       }),
     ];
   }
@@ -137,12 +137,12 @@ export function registerTCCommentUI(
 
   context.subscriptions.push(
     controller,
-    vscode.languages.registerCodeLensProvider({ scheme: "file" }, controller),
-    vscode.commands.registerCommand("technicalcredit.acceptTCComment", () => {
+    vscode.languages.registerCodeLensProvider({ scheme: 'file' }, controller),
+    vscode.commands.registerCommand('technicalcredit.acceptTCComment', () => {
       controller.accept();
     }),
     vscode.commands.registerCommand(
-      "technicalcredit.dismissTCComment",
+      'technicalcredit.dismissTCComment',
       async () => {
         await controller.dismiss();
       },

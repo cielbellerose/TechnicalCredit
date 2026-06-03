@@ -23,11 +23,11 @@ export function formatTCComment(result: TCResult, indent: string): string {
     `benefit: ${quote(result.benefit)},`,
     `category: ${quote(result.category)},`,
     `conditions: ${quote(result.conditions)},`,
-    `signals: [${result.signals.map(quote).join(", ")}],`,
+    `signals: [${result.signals.map(quote).join(', ')}],`,
     `confidence: ${result.confidence},`,
     // Placeholder until ADR linking is implemented.
     `adr: 'ADR-000',`,
   ];
-  const body = fields.map((line) => `${indent}${line}`).join("\n");
+  const body = fields.map((line) => `${indent}${line}`).join('\n');
   return `${indent}@TechnicalCredit({\n${body}\n${indent}})`;
 }
