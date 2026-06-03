@@ -1,5 +1,6 @@
-const esbuild = require('esbuild');
-const path = require('path');
+const esbuild = require("esbuild");
+const path = require("path");
+const fs = require("fs");
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
@@ -27,29 +28,40 @@ const esbuildProblemMatcherPlugin = {
 };
 
 async function main() {
-  const ctx = await esbuild.context({
-    entryPoints: ['src/extension.ts'],
-    bundle: true,
-    format: 'cjs',
-    minify: production,
-    sourcemap: !production,
-    sourcesContent: false,
-    platform: 'node',
-    outfile: 'dist/extension.js',
-    external: ['vscode'],
-    alias: { '@': path.resolve(__dirname, 'src') },
-    logLevel: 'silent',
-    plugins: [
-      /* add to the end of plugins array */
-      esbuildProblemMatcherPlugin,
-    ],
-  });
-  if (watch) {
-    await ctx.watch();
-  } else {
-    await ctx.rebuild();
-    await ctx.dispose();
-  }
+	const ctx = await esbuild.context({
+		entryPoints: [
+			'src/extension.ts'
+		],
+		bundle: true,
+		format: 'cjs',
+		minify: production,
+		sourcemap: !production,
+		sourcesContent: false,
+		platform: 'node',
+		outfile: 'dist/extension.js',
+		external: ['vscode'],
+		alias: {
+			'@': path.resolve(__dirname, 'src'),
+			// Force the CJS build — esbuild 0.28 resolves the ESM version by default,
+			// which breaks because import.meta.url becomes undefined in CJS output.
+			'web-tree-sitter': path.resolve(__dirname, 'node_modules/web-tree-sitter/web-tree-sitter.cjs'),
+		},
+		logLevel: 'silent',
+		plugins: [
+			/* add to the end of plugins array */
+			esbuildProblemMatcherPlugin,
+		],
+	});
+	fs.mkdirSync('dist', { recursive: true });
+	fs.copyFileSync('node_modules/web-tree-sitter/web-tree-sitter.wasm', 'dist/web-tree-sitter.wasm');
+	fs.copyFileSync('node_modules/tree-sitter-java/tree-sitter-java.wasm', 'dist/tree-sitter-java.wasm');
+
+	if (watch) {
+		await ctx.watch();
+	} else {
+		await ctx.rebuild();
+		await ctx.dispose();
+	}
 }
 
 main().catch((e) => {
