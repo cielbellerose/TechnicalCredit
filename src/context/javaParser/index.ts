@@ -90,11 +90,21 @@ export async function extractMetrics(
       return null;
     }
 
+    let enclosingClass: Node | null = node.parent;
+    while (
+      enclosingClass &&
+      enclosingClass.type !== 'class_declaration' &&
+      enclosingClass.type !== 'interface_declaration'
+    ) {
+      enclosingClass = enclosingClass.parent;
+    }
+
     return {
       constructType: CONSTRUCT_TYPE_MAP[node.type] ?? 'unknown',
       name: node.childForFieldName('name')?.text ?? null,
       annotations: nodeAnnotations(node),
       startRow: node.startPosition.row,
+      enclosingClassStartRow: enclosingClass?.startPosition.row ?? null,
       classMetrics:
         node.type === 'class_declaration'
           ? extractClassMetrics(node, importLines)

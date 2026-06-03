@@ -50,9 +50,10 @@ export async function buildContext(
   const isClassOrInterface =
     constructMetrics?.constructType === 'class' ||
     constructMetrics?.constructType === 'interface';
-  const insertLine = isClassOrInterface
-    ? Math.max(0, constructMetrics!.startRow - 1)
-    : anchorLine;
+  const classStartRow = isClassOrInterface
+    ? constructMetrics!.startRow
+    : constructMetrics?.enclosingClassStartRow ?? null;
+  const insertLine = classStartRow ?? anchorLine;
   const insertIndent =
     document.lineAt(insertLine).text.match(/^\s*/)?.[0] ?? '';
 
