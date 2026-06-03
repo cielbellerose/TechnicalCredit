@@ -15,6 +15,7 @@ export interface ConstructMetrics {
     | 'unknown';
   name: string | null;
   annotations: string[];
+  startRow: number;
   classMetrics: {
     superclass: string | null;
     implementedInterfaces: { name: string; resolvedImport: string | null }[];

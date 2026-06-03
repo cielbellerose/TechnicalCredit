@@ -94,6 +94,7 @@ export async function extractMetrics(
       constructType: CONSTRUCT_TYPE_MAP[node.type] ?? 'unknown',
       name: node.childForFieldName('name')?.text ?? null,
       annotations: nodeAnnotations(node),
+      startRow: node.startPosition.row,
       classMetrics:
         node.type === 'class_declaration'
           ? extractClassMetrics(node, importLines)

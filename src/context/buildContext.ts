@@ -31,9 +31,6 @@ export async function buildContext(
   const anchorCol = selection.isEmpty
     ? selection.active.character
     : selection.anchor.character;
-  const insertLine = anchorLine;
-  const insertIndent =
-    document.lineAt(anchorLine).text.match(/^\s*/)?.[0] ?? '';
 
   const fullSource = document.getText();
 
@@ -49,6 +46,15 @@ export async function buildContext(
     document.languageId === 'java'
       ? await extractMetrics(fullSource, anchorLine, anchorCol, ctx.importLines)
       : null;
+
+  const isClassOrInterface =
+    constructMetrics?.constructType === 'class' ||
+    constructMetrics?.constructType === 'interface';
+  const insertLine = isClassOrInterface
+    ? Math.max(0, constructMetrics!.startRow - 1)
+    : anchorLine;
+  const insertIndent =
+    document.lineAt(insertLine).text.match(/^\s*/)?.[0] ?? '';
 
   return { ...ctx, constructMetrics, insertLine, insertIndent };
 }
