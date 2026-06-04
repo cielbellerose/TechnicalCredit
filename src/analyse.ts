@@ -8,6 +8,7 @@ import { PendingAnnotation } from '@/comment/pendingAnnotation';
 
 /** Analyses the active editor selection for Technical Credit patterns and previews an annotation if found. */
 export async function analyseForTC(controller: PendingAnnotation) {
+  // Check for active editor
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
     vscode.window.showErrorMessage('Analyse for TC: no active editor.');
