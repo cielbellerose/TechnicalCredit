@@ -7,10 +7,13 @@ import { formatTCComment, TCResult } from '@/comment/formatComment';
 import { PendingAnnotation } from '@/comment/pendingAnnotation';
 
 /** Analyses the active editor selection for Technical Credit patterns and previews an annotation if found. */
-export async function analyseForTC(
-  editor: vscode.TextEditor,
-  controller: PendingAnnotation,
-): Promise<void> {
+export async function analyseForTC(controller: PendingAnnotation): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    vscode.window.showErrorMessage('Analyse for TC: no active editor.');
+    return;
+  }
+
   const tc = await buildContext(editor);
 
   if (!tc.selectedCode.trim()) {
