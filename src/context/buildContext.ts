@@ -17,18 +17,18 @@ export async function buildContext(editor: vscode.TextEditor): Promise<TcContext
   const { anchorLine, anchorCol } = resolveAnchor(editor);
   const fullSource = editor.document.getText();
 
-  const sourceCtx = buildContextFromSource(fullSource);
+  const imports = extractImports(fullSource);
 
   const constructMetrics =
     editor.document.languageId === 'java'
-      ? await extractMetrics(fullSource, anchorLine, anchorCol, sourceCtx.importLines)
+      ? await extractMetrics(fullSource, anchorLine, anchorCol, imports.importLines)
       : null;
 
   const insertLine = resolveInsertLine(constructMetrics, anchorLine);
   const insertIndent = editor.document.lineAt(insertLine).text.match(/^\s*/)?.[0] ?? '';
 
   return {
-    ...sourceCtx,
+    ...imports,
     fileName: editor.document.fileName,
     language: editor.document.languageId,
     constructMetrics,
@@ -47,7 +47,7 @@ function resolveAnchor(editor: vscode.TextEditor) {
 }
 
 /** Extracts import lines (including the package declaration) from raw source. */
-export function buildContextFromSource(fileContent: string): { importLines: string[] } {
+export function extractImports(fileContent: string): { importLines: string[] } {
   const allLines = fileContent.split('\n');
   const pkg = extractPackageDeclaration(allLines);
   const imports = extractImportLines(allLines);
