@@ -15,7 +15,6 @@ export function formatTCComment(result: TCResult, indent: string): string {
     `category: ${quote(result.category)},`,
     `conditions: ${quote(result.conditions)},`,
     `signals: [${result.signals.map(quote).join(', ')}],`,
-    `confidence: ${result.confidence},`,
     // Placeholder until ADR linking is implemented.
     `adr: 'ADR-000',`,
   ];

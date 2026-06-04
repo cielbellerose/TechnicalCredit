@@ -33,7 +33,6 @@ When TC is detected, populate these fields for the annotation:
 | TC category | category | Enum | One of the 8 categories above |
 | Realisation conditions | conditions | Free text | Circumstances under which benefit materialises |
 | Observable signals | signals | Tag list | Evidence that TC is being realised or eroding |
-| Confidence level | confidence | 1-5 ordinal | 1 = speculative, 3 = moderate, 5 = evidenced |
 | ADR reference | adr | ADR-n | Links to the ADR decision that created this TC (optional) |
 
 ## Response Format
@@ -41,7 +40,6 @@ When TC is detected, populate these fields for the annotation:
 Return JSON with this exact structure:
 {
   "is_tc_candidate": boolean,
-  "confidence": 1-5,
   "category": "abstraction"|"modularity"|"api-stability"|"automation"|"compliance-readiness"|"configurability"|"observability"|"reusability",
   "benefit": "one sentence describing the long-term value",
   "conditions": "when this benefit will materialise",

@@ -18,7 +18,6 @@ export type TCCategory =
 /** The structured Technical Credit analysis returned by the model. */
 export interface TCResult {
   is_tc_candidate: boolean;
-  confidence: number;
   category: TCCategory;
   benefit: string;
   conditions: string;
