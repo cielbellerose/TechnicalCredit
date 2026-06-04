@@ -17,18 +17,18 @@ export async function buildContext(editor: vscode.TextEditor): Promise<TcContext
   const { anchorLine, anchorCol } = resolveAnchor(editor);
   const fullSource = editor.document.getText();
 
-  const imports = extractImports(fullSource);
+  const importLines = extractImports(fullSource);
 
   const constructMetrics =
     editor.document.languageId === 'java'
-      ? await extractMetrics(fullSource, anchorLine, anchorCol, imports.importLines)
+      ? await extractMetrics(fullSource, anchorLine, anchorCol, importLines)
       : null;
 
   const insertLine = resolveInsertLine(constructMetrics, anchorLine);
   const insertIndent = editor.document.lineAt(insertLine).text.match(/^\s*/)?.[0] ?? '';
 
   return {
-    ...imports,
+    importLines,
     fileName: editor.document.fileName,
     language: editor.document.languageId,
     constructMetrics,
@@ -47,13 +47,11 @@ function resolveAnchor(editor: vscode.TextEditor) {
 }
 
 /** Extracts import lines (including the package declaration) from raw source. */
-export function extractImports(fileContent: string): { importLines: string[] } {
+export function extractImports(fileContent: string): string[] {
   const allLines = fileContent.split('\n');
   const pkg = extractPackageDeclaration(allLines);
   const imports = extractImportLines(allLines);
-  return {
-    importLines: pkg ? [pkg, ...imports] : imports,
-  };
+  return pkg ? [pkg, ...imports] : imports;
 }
 
 /** Finds the package declaration line in the file, or returns null if absent. */

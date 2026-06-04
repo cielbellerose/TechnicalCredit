@@ -12,14 +12,14 @@ const MOCK = loadMock('MockTest.java');
 
 describe('extractImports — assembly against MockTest.java', () => {
   test('finds no imports when file has none', () => {
-    const ctx = extractImports(MOCK);
+    const imports = extractImports(MOCK);
     expect(ctx.importLines).toEqual([]);
   });
 });
 
 describe('extractImports — package and import extraction', () => {
   test('merges package declaration as the first import line', () => {
-    const ctx = extractImports(
+    const imports = extractImports(
       [
         'package com.example.app;',
         '',
@@ -38,7 +38,7 @@ describe('extractImports — package and import extraction', () => {
   });
 
   test('trims leading whitespace from import lines', () => {
-    const ctx = extractImports('  import java.util.List;\nimport java.util.Map;');
+    const imports = extractImports('  import java.util.List;\nimport java.util.Map;');
     expect(ctx.importLines).toEqual(['import java.util.List;', 'import java.util.Map;']);
   });
 });
