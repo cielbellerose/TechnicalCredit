@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 import { buildContext } from '@/context/buildContext';
-import { SYSTEM_PROMPT } from '@/context/systemPrompt';
+import { SYSTEM_PROMPT } from '@/prompts/systemPrompt';
 import { callClaude } from '@/utils/claude';
 import { formatTCComment, TCResult } from '@/comment/formatComment';
 import { PendingAnnotation } from '@/comment/pendingAnnotation';
