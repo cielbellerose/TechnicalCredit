@@ -125,29 +125,3 @@ export class PendingAnnotation
   }
 }
 
-/**
- * Wires up the Accept/Dismiss commands and the CodeLens provider that drive the
- * inline TC annotation preview. Returns the controller so the analyse command
- * can push previews into it.
- */
-export function registerTCCommentUI(
-  context: vscode.ExtensionContext,
-): PendingAnnotation {
-  const controller = new PendingAnnotation();
-
-  context.subscriptions.push(
-    controller,
-    vscode.languages.registerCodeLensProvider({ scheme: 'file' }, controller),
-    vscode.commands.registerCommand('technicalcredit.acceptTCComment', () => {
-      controller.accept();
-    }),
-    vscode.commands.registerCommand(
-      'technicalcredit.dismissTCComment',
-      async () => {
-        await controller.dismiss();
-      },
-    ),
-  );
-
-  return controller;
-}
