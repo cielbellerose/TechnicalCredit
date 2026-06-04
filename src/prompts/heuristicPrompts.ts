@@ -25,7 +25,7 @@ export function createHeuristicPrompt(heuristic: HeuristicCategory): string {
   return heuristicPrompts[heuristic];
 }
 
-export const ABSTRACTION_PROMPT = `You are detecting ABSTRACTION Technical Credit.
+const ABSTRACTION_PROMPT = `You are detecting ABSTRACTION Technical Credit.
 
 Look for:
 - Interface or abstract type with no fields and no concrete methods — strong TC if a separate implementation exists in a different package or module.
@@ -36,7 +36,7 @@ Look for:
 
 Not TC: interface with a single implementation in the same package, or abstract class used only as a code-sharing shortcut.`;
 
-export const MODULARITY_PROMPT = `You are detecting MODULARITY Technical Credit.
+const MODULARITY_PROMPT = `You are detecting MODULARITY Technical Credit.
 
 Look for:
 - Package or module path named by domain (com.example.payments) not layer (com.example.controllers) — bounded context boundary.
@@ -46,7 +46,7 @@ Look for:
 
 Not TC: class in a layer-named package, or high cross-package imports that grew organically.`;
 
-export const API_STABILITY_PROMPT = `You are detecting API STABILITY Technical Credit.
+const API_STABILITY_PROMPT = `You are detecting API STABILITY Technical Credit.
 
 Look for:
 - Methods returning interface or abstract types rather than concrete types — stable contract hiding implementation.
@@ -57,7 +57,7 @@ Look for:
 
 Not TC: interface return type with no versioning intent, or deprecation with no migration guidance.`;
 
-export const AUTOMATION_PROMPT = `You are detecting AUTOMATION Technical Credit.
+const AUTOMATION_PROMPT = `You are detecting AUTOMATION Technical Credit.
 
 Look for:
 - Code generation annotations that eliminate manually maintained boilerplate (@Builder, @Data, @Mapper, @Generated or equivalents).
@@ -68,7 +68,7 @@ Look for:
 
 Not TC: code generation used purely for convenience with no architectural intent, or a factory that just wraps a constructor.`;
 
-export const KNOWLEDGE_PRESERVATION_PROMPT = `You are detecting KNOWLEDGE PRESERVATION Technical Credit.
+const KNOWLEDGE_PRESERVATION_PROMPT = `You are detecting KNOWLEDGE PRESERVATION Technical Credit.
 
 Look for:
 - Documentation explaining WHY a design decision was made, not just what the code does.
@@ -79,7 +79,7 @@ Look for:
 
 Not TC: documentation that restates the method signature, or comments describing what rather than why.`;
 
-export const CONFIGURABILITY_PROMPT = `You are detecting CONFIGURABILITY Technical Credit.
+const CONFIGURABILITY_PROMPT = `You are detecting CONFIGURABILITY Technical Credit.
 
 Look for:
 - Constructor or setter accepting a configuration object, map, or environment — behaviour driven by external config rather than hardcoded values.
@@ -90,7 +90,7 @@ Look for:
 
 Not TC: class reading config values but hardcoding the valid set, or conditional wiring with no meaningful variation between environments.`;
 
-export const OBSERVABILITY_PROMPT = `You are detecting OBSERVABILITY Technical Credit.
+const OBSERVABILITY_PROMPT = `You are detecting OBSERVABILITY Technical Credit.
 
 Look for:
 - Metrics instrumentation — counters, timers, gauges registered via a metrics library, or metric annotations.
@@ -101,7 +101,7 @@ Look for:
 
 Not TC: logging used only for debug output with string concatenation, or metrics library imported but no meters registered.`;
 
-export const REUSABILITY_PROMPT = `You are detecting REUSABILITY Technical Credit.
+const REUSABILITY_PROMPT = `You are detecting REUSABILITY Technical Credit.
 
 Look for:
 - Class in a package named common, shared, core, or util that is imported across many modules — intentional shared infrastructure.
@@ -112,7 +112,7 @@ Look for:
 
 Not TC: utility class extracted for a single caller, or generic class whose type parameter is only ever instantiated with one concrete type.`;
 
-export const COMPLIANCE_READINESS_PROMPT = `You are detecting COMPLIANCE READINESS Technical Credit.
+const COMPLIANCE_READINESS_PROMPT = `You are detecting COMPLIANCE READINESS Technical Credit.
 
 Look for:
 - Audit or event abstraction (AuditService, AuditEvent, DomainEvent or equivalent) — compliance recording decoupled from business logic.
