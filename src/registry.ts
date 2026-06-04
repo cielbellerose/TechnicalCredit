@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { analyseForTC } from '@/commands/analyseForTC';
+import { analyseForTC } from '@/analyse';
 import { PendingAnnotation } from '@/comment/pendingAnnotation';
 
 /** Registers all commands, providers, and subscriptions for the extension. */
