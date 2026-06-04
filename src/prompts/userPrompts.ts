@@ -29,8 +29,8 @@ export function createUserPrompt(context: TcContext) {
     .join('\n');
 }
 
-export function createHeuristicPrompt(heuristic: HeuristicCategory) {
-  return {
+export function createHeuristicPrompt(heuristic: HeuristicCategory): string {
+  const heuristicMapping: Record<HeuristicCategory, string> = {
     abstraction: `Analyse the following code construct for Technical Credit patterns related to ABSTRACTION (interface/impl separation, adapter/wrapper, constructor injection, facade, template method).`,
 
     modularity: `Analyse the following code construct for Technical Credit patterns related to MODULARITY (package-by-feature, module-info.java, package-private classes, low internal fan-out, strategy/composite for extension).`,
@@ -39,12 +39,16 @@ export function createHeuristicPrompt(heuristic: HeuristicCategory) {
 
     automation: `Analyse the following code construct for Technical Credit patterns related to AUTOMATION (Lombok @Builder/@Data/@Value, MapStruct @Mapper, @Generated, annotation processors, parametrised tests, factory/builder for config-driven creation, ServiceLoader).`,
 
-    'compliance-readiness': `Analyse the following code construct for Technical Credit patterns related to COMPLIANCE READINESS (audit/event abstractions like AuditService/AuditEvent/DomainEvent, compliance domain types like Consent/Retention/Gdpr/Regulatory/Jurisdiction, cross-cutting interceptors/filters, annotations like @PersonalData/@Sensitive/@Pii and @ConditionalOnProperty/FeatureFlag).`,
+    'knowledge-preservation ': `Analyse the following code construct for Technical Credit patterns related to KNOWLEDGE PRESERVATION (ADR reference, rationale field in annotation, comprehensive Javadoc).`,
+
+    configurability: `Analyse the following code construct for Technical Credit patterns related to CONFIGURABILITY (constructor/setter accepts Properties/Map/Environment, @Configuration + @ConditionalOnProperty/@ConditionalOnMissingBean, strategy selected by property, builder with optional fields, @SPI/ServiceLoader extension point).`,
 
     observability: `Analyse the following code construct for Technical Credit patterns related to OBSERVABILITY (Micrometer imports like io.micrometer.*, @Timed/@Counted, structured logging with key=value pairs or MDC, @WithSpan/Tracer/io.opentelemetry, HealthIndicator/@Readiness/@Liveness, ApplicationEventPublisher/EventBus).`,
 
-    configurability: `Analyse the following code construct for Technical Credit patterns related to CONFIGURABILITY (constructor/setter accepts Properties/Map/Environment, @Configuration + @ConditionalOnProperty/@ConditionalOnMissingBean, strategy selected by property, builder with optional fields, @SPI/ServiceLoader extension point).`,
-    
     reusability: `Analyse the following code construct for Technical Credit patterns related to REUSABILITY (high fan-in components in common/shared/core/util packages, generic classes with type parameters, abstract base with reusable behaviour, framework-free utility classes, template method for shared algorithm).`,
-  }[heuristic];
+
+    'compliance-readiness': `Analyse the following code construct for Technical Credit patterns related to COMPLIANCE READINESS (audit/event abstractions like AuditService/AuditEvent/DomainEvent, compliance domain types like Consent/Retention/Gdpr/Regulatory/Jurisdiction, cross-cutting interceptors/filters, annotations like @PersonalData/@Sensitive/@Pii and @ConditionalOnProperty/FeatureFlag).`,
+  };
+
+  return heuristicMapping[heuristic];
 }
