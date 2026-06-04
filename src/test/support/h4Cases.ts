@@ -46,12 +46,12 @@ export interface H4Case {
    * The verdict a careful reviewer would give — the ground truth the live eval
    * compares Claude's output against.
    *
-   * `is_tc_candidate` is the primary assertion. `category` is the expected TC
+   * `is_tc_candidate` is the primary assertion. `H4Category` is the expected TC
    * category (null when not a candidate).
    */
   expected: {
     is_tc_candidate: boolean;
-    category: H4Category | null;
+    H4Category: H4Category | null;
   };
 }
 
@@ -63,7 +63,7 @@ export const h4Cases: H4Case[] = [
       'Gateway suffix; adapts an external payment provider behind the PaymentGateway interface — textbook abstraction seam.',
     suffixMatch: true,
     signals: ['Gateway'],
-    expected: { is_tc_candidate: true, category: 'reusability' },
+    expected: { is_tc_candidate: true, H4Category: 'reusability' },
   },
   {
     name: 'OrderFactory',
@@ -71,7 +71,7 @@ export const h4Cases: H4Case[] = [
       'Factory suffix; centralises Order construction behind named creation methods, decoupling callers from the constructor.',
     suffixMatch: true,
     signals: ['Factory'],
-    expected: { is_tc_candidate: true, category: 'reusability' },
+    expected: { is_tc_candidate: true, H4Category: 'reusability' },
   },
   {
     name: 'PricingStrategy',
@@ -79,7 +79,7 @@ export const h4Cases: H4Case[] = [
       'Strategy suffix; interface for a pluggable pricing algorithm selected at runtime — extension point.',
     suffixMatch: true,
     signals: ['Strategy'],
-    expected: { is_tc_candidate: true, category: 'reusability' },
+    expected: { is_tc_candidate: true, H4Category: 'reusability' },
   },
   {
     name: 'HttpClientBuilder',
@@ -87,7 +87,7 @@ export const h4Cases: H4Case[] = [
       'Builder suffix; fluent, immutable construction of HttpClient — reusable configuration abstraction.',
     suffixMatch: true,
     signals: ['Builder'],
-    expected: { is_tc_candidate: true, category: 'reusability' },
+    expected: { is_tc_candidate: true, H4Category: 'reusability' },
   },
 
   // --- Negatives ---
@@ -97,7 +97,7 @@ export const h4Cases: H4Case[] = [
       'Service suffix MATCHES, but it is a plain data holder (fields + getters/setters, no behaviour, no abstraction). Precision guard: H4 recall flags the name, the verdict should not.',
     suffixMatch: true,
     signals: ['Service'],
-    expected: { is_tc_candidate: false, category: null },
+    expected: { is_tc_candidate: false, H4Category: null },
   },
   {
     name: 'StringUtils',
@@ -105,6 +105,6 @@ export const h4Cases: H4Case[] = [
       'No suffix match (Utils is not in the pattern list); trivial stateless helper — outside H4 entirely.',
     suffixMatch: false,
     signals: [],
-    expected: { is_tc_candidate: false, category: null },
+    expected: { is_tc_candidate: false, H4Category: null },
   },
 ];
