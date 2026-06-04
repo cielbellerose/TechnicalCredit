@@ -123,3 +123,60 @@ class ReflectiveLoader {
         return Class.forName(className);
     }
 }
+
+// --- H2 positive cases: class implements an interface from a DIFFERENT package
+// (abstraction / modularity). The signal lives inside the slice: the
+// implemented type is fully-qualified to a package other than the implementing
+// class's, so the extracted construct carries the cross-package evidence on its
+// own — a deliberate decoupling of an impl from the port it satisfies. ---
+
+// Persistence adapter implementing a domain-layer port from another package.
+class JpaUserRepository implements com.example.domain.IUserRepository {
+    public User findById(long id) {
+        return null; // JPA lookup elided
+    }
+}
+
+// Payment adapter implementing a port declared in the payment-api package.
+class StripeGateway implements com.example.payment.api.PaymentGateway {
+    public boolean charge(String token, long amountCents) {
+        return amountCents > 0;
+    }
+}
+
+// Infrastructure cache implementing an SPI interface from a different package.
+class RedisCacheStore implements com.example.cache.spi.CacheStore {
+    public void put(String key, String value) {
+        // redis SET elided
+    }
+
+    public String get(String key) {
+        return null;
+    }
+}
+
+// --- H2 negative cases: class implements an interface in the SAME package
+// (simple name, no cross-package qualifier). Interface and impl live together,
+// so the cross-package decoupling signal H2 looks for is absent. ---
+
+interface UserStore {
+    User findById(long id);
+}
+
+// Same-package implementation — no package boundary is crossed.
+class InMemoryUserStore implements UserStore {
+    public User findById(long id) {
+        return null;
+    }
+}
+
+interface LocalValidator {
+    boolean check(String input);
+}
+
+// Same-package implementation of a sibling interface.
+class StrictLocalValidator implements LocalValidator {
+    public boolean check(String input) {
+        return input != null && !input.isBlank();
+    }
+}
