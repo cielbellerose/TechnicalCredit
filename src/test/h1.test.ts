@@ -64,7 +64,7 @@ describe('H1 — interface with no fields', () => {
     const polarity = c.expected.is_tc_candidate ? 'positive' : 'negative';
     test(`${c.name} (${polarity}) — ${c.rationale}`, () => {
       const code = extractType(MOCK, c.name);
-      
+
       // TODO: update to test JSON output
       expect(code).not.toBe(''); // currently only checks that construct must exist in MockTest.java
     });
