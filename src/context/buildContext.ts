@@ -24,6 +24,7 @@ export async function buildContext(editor: vscode.TextEditor): Promise<TcContext
       ? await extractMetrics(fullSource, anchorLine, anchorCol, importLines)
       : null;
 
+  // Calculate line and indent to insert technical credit comment
   const insertLine = resolveInsertLine(constructMetrics, anchorLine);
   const insertIndent = editor.document.lineAt(insertLine).text.match(/^\s*/)?.[0] ?? '';
 
@@ -69,7 +70,7 @@ export function extractImportLines(allLines: string[]): string[] {
 /**
  * Returns the line above which the TC annotation should be inserted.
  * For class/interface constructs uses their own declaration line; for methods and
- * fields uses the enclosing class line. Falls back to the cursor anchor line.
+ * fields uses the enclosing class line. Falls back to the cursor anchor line for non-Java files.
  */
 function resolveInsertLine(
   constructMetrics: ConstructMetrics | null,
@@ -81,9 +82,7 @@ function resolveInsertLine(
 
   const { constructType, startRow, enclosingClassStartRow } = constructMetrics;
 
-  if (constructType === 'class' || constructType === 'interface') {
-    return startRow;
-  }
-
-  return enclosingClassStartRow ?? anchorLine;
+  return constructType === 'class' || constructType === 'interface'
+    ? startRow
+    : enclosingClassStartRow!;
 }
