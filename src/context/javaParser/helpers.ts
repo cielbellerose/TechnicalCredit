@@ -1,7 +1,6 @@
 import { Node } from 'web-tree-sitter';
 
-// Returns the modifiers node (visibility, final, static, annotations) for any declaration.
-// tree-sitter exposes it as a named field on most nodes but falls back to a named child.
+/** Returns the modifiers node (visibility, final, static, annotations) for a declaration node. */
 export function getModifiers(node: Node): Node | undefined {
   return (
     node.childForFieldName('modifiers') ??
@@ -9,8 +8,7 @@ export function getModifiers(node: Node): Node | undefined {
   );
 }
 
-// Returns the type node for a field or parameter — e.g. "DataSource", "List<String>".
-// Tries the named "type" field first, then falls back to any child whose node type ends in "_type".
+/** Returns the type node for a field or parameter, e.g. `DataSource` or `List<String>`. */
 export function getTypeNode(node: Node): Node | undefined {
   return (
     node.childForFieldName('type') ??
@@ -20,7 +18,7 @@ export function getTypeNode(node: Node): Node | undefined {
   );
 }
 
-// Returns the names of all annotations on a declaration node, e.g. ["Service", "Autowired"].
+/** Returns the names of all annotations on a declaration node, e.g. `["Service", "Autowired"]`. */
 export function nodeAnnotations(node: Node): string[] {
   const modifiers = getModifiers(node);
   if (!modifiers) {
@@ -32,15 +30,14 @@ export function nodeAnnotations(node: Node): string[] {
     .filter(Boolean) as string[];
 }
 
-// Returns all field and constant declaration nodes from a class or interface body.
+/** Returns all field and constant declaration nodes from a class or interface body. */
 export function fieldNodes(body: Node): Node[] {
   return body.namedChildren.filter(
     (c) => c.type === 'field_declaration' || c.type === 'constant_declaration',
   );
 }
 
-// Returns the list of interfaces a class or interface declares it implements/extends,
-// each paired with the full import line that resolves which package the interface comes from.
+/** Returns the interfaces a class implements or an interface extends, each paired with its resolved import line. */
 export function resolveInterfaceNames(
   node: Node,
   importLines: string[],
