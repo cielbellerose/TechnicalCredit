@@ -8,9 +8,7 @@ import {
   resolveInterfaceNames,
 } from './helpers';
 
-// Extracts all structural metrics from a class declaration: superclass, implemented interfaces,
-// fields (with names, types, and final flag), constructors (with parameter types and @Autowired flag),
-// method count, and any nested class/interface/enum declarations.
+/** Extracts superclass, implemented interfaces, fields, constructors, method count, and nested declarations from a class declaration node. */
 export function extractClassMetrics(
   decl: Node,
   importLines: string[],
@@ -88,8 +86,7 @@ export function extractClassMetrics(
   };
 }
 
-// Extracts structural metrics from an interface declaration: field count,
-// method count, and any interfaces this interface extends.
+/** Extracts field count, method count, and extended interfaces from an interface declaration node. */
 export function extractInterfaceMetrics(
   decl: Node,
 ): ConstructMetrics['interfaceMetrics'] {
