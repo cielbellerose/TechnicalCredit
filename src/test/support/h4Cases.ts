@@ -22,7 +22,7 @@ export const H4_SUFFIX_PATTERN =
   /(Adapter|Repository|Gateway|Port|Service|Strategy|Factory|Builder|Policy)$/;
 
 /** The TC categories H4 can land in. */
-export type H4Category = "abstraction" | "reusability";
+export type H4Category = 'abstraction' | 'reusability';
 
 export interface H4Case {
   /** Type name exactly as declared in MockTest.java. */
@@ -58,51 +58,51 @@ export interface H4Case {
 export const h4Cases: H4Case[] = [
   // --- Positives: suffix match AND a meaningful abstraction ---
   {
-    name: "StripeGateway",
+    name: 'StripeGateway',
     rationale:
-      "Gateway suffix; adapts an external payment provider behind the PaymentGateway interface — textbook abstraction seam.",
+      'Gateway suffix; adapts an external payment provider behind the PaymentGateway interface — textbook abstraction seam.',
     suffixMatch: true,
-    signals: ["Gateway"],
-    expected: { is_tc_candidate: true, category: "reusability" },
+    signals: ['Gateway'],
+    expected: { is_tc_candidate: true, category: 'reusability' },
   },
   {
-    name: "OrderFactory",
+    name: 'OrderFactory',
     rationale:
-      "Factory suffix; centralises Order construction behind named creation methods, decoupling callers from the constructor.",
+      'Factory suffix; centralises Order construction behind named creation methods, decoupling callers from the constructor.',
     suffixMatch: true,
-    signals: ["Factory"],
-    expected: { is_tc_candidate: true, category: "reusability" },
+    signals: ['Factory'],
+    expected: { is_tc_candidate: true, category: 'reusability' },
   },
   {
-    name: "PricingStrategy",
+    name: 'PricingStrategy',
     rationale:
-      "Strategy suffix; interface for a pluggable pricing algorithm selected at runtime — extension point.",
+      'Strategy suffix; interface for a pluggable pricing algorithm selected at runtime — extension point.',
     suffixMatch: true,
-    signals: ["Strategy"],
-    expected: { is_tc_candidate: true, category: "reusability" },
+    signals: ['Strategy'],
+    expected: { is_tc_candidate: true, category: 'reusability' },
   },
   {
-    name: "HttpClientBuilder",
+    name: 'HttpClientBuilder',
     rationale:
-      "Builder suffix; fluent, immutable construction of HttpClient — reusable configuration abstraction.",
+      'Builder suffix; fluent, immutable construction of HttpClient — reusable configuration abstraction.',
     suffixMatch: true,
-    signals: ["Builder"],
-    expected: { is_tc_candidate: true, category: "reusability" },
+    signals: ['Builder'],
+    expected: { is_tc_candidate: true, category: 'reusability' },
   },
 
   // --- Negatives ---
   {
-    name: "AccountService",
+    name: 'AccountService',
     rationale:
-      "Service suffix MATCHES, but it is a plain data holder (fields + getters/setters, no behaviour, no abstraction). Precision guard: H4 recall flags the name, the verdict should not.",
+      'Service suffix MATCHES, but it is a plain data holder (fields + getters/setters, no behaviour, no abstraction). Precision guard: H4 recall flags the name, the verdict should not.',
     suffixMatch: true,
-    signals: ["Service"],
+    signals: ['Service'],
     expected: { is_tc_candidate: false, category: null },
   },
   {
-    name: "StringUtils",
+    name: 'StringUtils',
     rationale:
-      "No suffix match (Utils is not in the pattern list); trivial stateless helper — outside H4 entirely.",
+      'No suffix match (Utils is not in the pattern list); trivial stateless helper — outside H4 entirely.',
     suffixMatch: false,
     signals: [],
     expected: { is_tc_candidate: false, category: null },

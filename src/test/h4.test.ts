@@ -1,5 +1,5 @@
-import { loadMock, extractType } from "./support/mockSource";
-import { H4_SUFFIX_PATTERN, h4Cases } from "./support/h4Cases";
+import { loadMock, extractType } from './support/mockSource';
+import { H4_SUFFIX_PATTERN, h4Cases } from './support/h4Cases';
 
 /**
  * H4 — class-name suffix matching → abstraction / reusability.
@@ -23,14 +23,14 @@ import { H4_SUFFIX_PATTERN, h4Cases } from "./support/h4Cases";
  */
 
 // reads MockTest.java for testing
-const MOCK = loadMock("MockTest.java");
+const MOCK = loadMock('MockTest.java');
 
-describe("H4 — class-name suffix matching", () => {
+describe('H4 — class-name suffix matching', () => {
   for (const c of h4Cases) {
-    const polarity = c.expected.is_tc_candidate ? "positive" : "negative";
+    const polarity = c.expected.is_tc_candidate ? 'positive' : 'negative';
     test(`${c.name} (${polarity}) — ${c.rationale}`, () => {
       const code = extractType(MOCK, c.name);
-      expect(code).not.toBe(""); // construct must exist in MockTest.java
+      expect(code).not.toBe(''); // construct must exist in MockTest.java
 
       // The name's suffix-match status must match what the catalog claims,
       // so the pattern list and the fixtures can't silently drift apart.
