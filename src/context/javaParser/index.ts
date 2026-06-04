@@ -102,7 +102,8 @@ export async function extractMetrics(
     }
 
     const isClassOrInterface =
-      node.type === 'class_declaration' || node.type === 'interface_declaration';
+      node.type === 'class_declaration' ||
+      node.type === 'interface_declaration';
     const classNode = isClassOrInterface ? node : enclosingClass;
 
     if (!classNode) {

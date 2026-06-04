@@ -38,7 +38,12 @@ describe('extractImports — package and import extraction', () => {
   });
 
   test('trims leading whitespace from import lines', () => {
-    const imports = extractImports('  import java.util.List;\nimport java.util.Map;');
-    expect(imports).toEqual(['import java.util.List;', 'import java.util.Map;']);
+    const imports = extractImports(
+      '  import java.util.List;\nimport java.util.Map;',
+    );
+    expect(imports).toEqual([
+      'import java.util.List;',
+      'import java.util.Map;',
+    ]);
   });
 });

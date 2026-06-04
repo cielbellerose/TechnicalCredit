@@ -13,7 +13,9 @@ export interface TcContext {
 }
 
 /** Builds the full TC context from the active editor state, including Java construct metrics. */
-export async function buildContext(editor: vscode.TextEditor): Promise<TcContext> {
+export async function buildContext(
+  editor: vscode.TextEditor,
+): Promise<TcContext> {
   const { anchorLine, anchorCol } = resolveAnchor(editor);
   const fullSource = editor.document.getText();
 
@@ -26,7 +28,8 @@ export async function buildContext(editor: vscode.TextEditor): Promise<TcContext
 
   // Calculate line and indent to insert technical credit comment
   const insertLine = resolveInsertLine(constructMetrics, anchorLine);
-  const insertIndent = editor.document.lineAt(insertLine).text.match(/^\s*/)?.[0] ?? '';
+  const insertIndent =
+    editor.document.lineAt(insertLine).text.match(/^\s*/)?.[0] ?? '';
 
   return {
     importLines,
@@ -42,8 +45,12 @@ export async function buildContext(editor: vscode.TextEditor): Promise<TcContext
 function resolveAnchor(editor: vscode.TextEditor) {
   const { selection } = editor;
   return {
-    anchorLine: selection.isEmpty ? selection.active.line : selection.anchor.line,
-    anchorCol: selection.isEmpty ? selection.active.character : selection.anchor.character,
+    anchorLine: selection.isEmpty
+      ? selection.active.line
+      : selection.anchor.line,
+    anchorCol: selection.isEmpty
+      ? selection.active.character
+      : selection.anchor.character,
   };
 }
 
@@ -57,7 +64,10 @@ export function extractImports(fileContent: string): string[] {
 
 /** Finds the package declaration line in the file, or returns null if absent. */
 export function extractPackageDeclaration(allLines: string[]): string | null {
-  return allLines.find((line) => /^\s*package\s+[\w.]+\s*;/.test(line))?.trim() ?? null;
+  return (
+    allLines.find((line) => /^\s*package\s+[\w.]+\s*;/.test(line))?.trim() ??
+    null
+  );
 }
 
 /** Returns all import statement lines, trimmed of leading whitespace. */

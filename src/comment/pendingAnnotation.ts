@@ -124,4 +124,3 @@ export class PendingAnnotation
     this.changed.dispose();
   }
 }
-
