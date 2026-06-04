@@ -3,7 +3,8 @@ import * as vscode from 'vscode';
 import { buildContext } from '@/context/buildContext';
 import { SYSTEM_PROMPT } from '@/context/systemPrompt';
 import { claude } from '@/claude';
-import { formatTCComment, TCResult } from '@/comment/formatComment';
+import { formatTCComment } from '@/comment/formatComment';
+import { TCResult } from '@/comment/tcResult';
 import { PendingAnnotation } from '@/comment/pendingAnnotation';
 
 const MODEL = 'claude-sonnet-4-20250514';

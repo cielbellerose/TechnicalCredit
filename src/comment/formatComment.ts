@@ -1,13 +1,4 @@
-/** The structured Technical Credit analysis returned by the model. */
-export interface TCResult {
-  is_tc_candidate: boolean;
-  confidence: number;
-  category: string;
-  benefit: string;
-  conditions: string;
-  signals: string[];
-  not_tc_reason: string | null;
-}
+import { TCResult } from './tcResult';
 
 /** Wraps a value in single quotes, escaping any single quotes it contains. */
 function quote(value: string): string {
