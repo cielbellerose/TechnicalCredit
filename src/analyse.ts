@@ -17,9 +17,9 @@ export async function analyseForTC(controller: PendingAnnotation) {
 
   const context = await buildContext(editor);
 
-  if (!context.selectedCode.trim()) {
+  if (!context.constructMetrics) {
     vscode.window.showErrorMessage(
-      'Analyse for TC: no code selected or no word at cursor.',
+      'Analyse for TC: cursor is not inside a class or interface.',
     );
     return;
   }
@@ -27,13 +27,9 @@ export async function analyseForTC(controller: PendingAnnotation) {
   const userMessage = [
     `Analyse the following code construct for Technical Credit patterns.`,
     `File: ${context.fileName}  Language: ${context.language}`,
-    context.packageDeclaration ? `Package: ${context.packageDeclaration}` : null,
     context.importLines.length > 0 ? `Imports:\n${context.importLines.join('\n')}` : null,
-    context.constructMetrics
-      ? `Pre-extracted construct metrics (tree-sitter):\n${JSON.stringify(context.constructMetrics, null, 2)}`
-      : null,
-    `Selected code:\n${context.selectedCode}`,
-    `Full file context:\n${context.fileContent}`,
+    `Pre-extracted construct metrics (tree-sitter):\n${JSON.stringify(context.constructMetrics, null, 2)}`,
+    `Class source:\n${context.constructMetrics.classSource}`,
   ]
     .filter(Boolean)
     .join('\n');

@@ -101,12 +101,21 @@ export async function extractMetrics(
       enclosingClass = enclosingClass.parent;
     }
 
+    const isClassOrInterface =
+      node.type === 'class_declaration' || node.type === 'interface_declaration';
+    const classNode = isClassOrInterface ? node : enclosingClass;
+
+    if (!classNode) {
+      return null;
+    }
+
     return {
       constructType: CONSTRUCT_TYPE_MAP[node.type] ?? 'unknown',
       name: node.childForFieldName('name')?.text ?? null,
       annotations: nodeAnnotations(node),
       startRow: node.startPosition.row,
       enclosingClassStartRow: enclosingClass?.startPosition.row ?? null,
+      classSource: classNode.text,
       classMetrics:
         node.type === 'class_declaration'
           ? extractClassMetrics(node, importLines)
