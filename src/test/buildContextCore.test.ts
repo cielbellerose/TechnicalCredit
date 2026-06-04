@@ -1,8 +1,8 @@
-import { buildContextFromSource } from '@/context/buildContext';
+import { extractImports } from '@/context/buildContext';
 import { loadMock } from './support/mockSource';
 
 /**
- * Tests buildContextFromSource — the pure, vscode-free context assembler.
+ * Tests extractImports — the pure, vscode-free context assembler.
  *
  * Scope: package/import extraction and merging.
  * WHICH constructs are TC candidates is covered in per-heuristic fixture tests.
@@ -10,16 +10,16 @@ import { loadMock } from './support/mockSource';
 
 const MOCK = loadMock('MockTest.java');
 
-describe('buildContextFromSource — assembly against MockTest.java', () => {
+describe('extractImports — assembly against MockTest.java', () => {
   test('finds no imports when file has none', () => {
-    const ctx = buildContextFromSource(MOCK);
+    const ctx = extractImports(MOCK);
     expect(ctx.importLines).toEqual([]);
   });
 });
 
-describe('buildContextFromSource — package and import extraction', () => {
+describe('extractImports — package and import extraction', () => {
   test('merges package declaration as the first import line', () => {
-    const ctx = buildContextFromSource(
+    const ctx = extractImports(
       [
         'package com.example.app;',
         '',
@@ -38,7 +38,7 @@ describe('buildContextFromSource — package and import extraction', () => {
   });
 
   test('trims leading whitespace from import lines', () => {
-    const ctx = buildContextFromSource('  import java.util.List;\nimport java.util.Map;');
+    const ctx = extractImports('  import java.util.List;\nimport java.util.Map;');
     expect(ctx.importLines).toEqual(['import java.util.List;', 'import java.util.Map;']);
   });
 });
