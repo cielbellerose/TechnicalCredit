@@ -14,9 +14,9 @@ export async function analyseForTC(controller: PendingAnnotation) {
     return;
   }
 
-  const tc = await buildContext(editor);
+  const context = await buildContext(editor);
 
-  if (!tc.selectedCode.trim()) {
+  if (!context.selectedCode.trim()) {
     vscode.window.showErrorMessage(
       'Analyse for TC: no code selected or no word at cursor.',
     );
@@ -25,14 +25,14 @@ export async function analyseForTC(controller: PendingAnnotation) {
 
   const userMessage = [
     `Analyse the following code construct for Technical Credit patterns.`,
-    `File: ${tc.fileName}  Language: ${tc.language}`,
-    tc.packageDeclaration ? `Package: ${tc.packageDeclaration}` : null,
-    tc.importLines.length > 0 ? `Imports:\n${tc.importLines.join('\n')}` : null,
-    tc.constructMetrics
-      ? `Pre-extracted construct metrics (tree-sitter):\n${JSON.stringify(tc.constructMetrics, null, 2)}`
+    `File: ${context.fileName}  Language: ${context.language}`,
+    context.packageDeclaration ? `Package: ${context.packageDeclaration}` : null,
+    context.importLines.length > 0 ? `Imports:\n${context.importLines.join('\n')}` : null,
+    context.constructMetrics
+      ? `Pre-extracted construct metrics (tree-sitter):\n${JSON.stringify(context.constructMetrics, null, 2)}`
       : null,
-    `Selected code:\n${tc.selectedCode}`,
-    `Full file context:\n${tc.fileContent}`,
+    `Selected code:\n${context.selectedCode}`,
+    `Full file context:\n${context.fileContent}`,
   ]
     .filter(Boolean)
     .join('\n');
@@ -47,8 +47,8 @@ export async function analyseForTC(controller: PendingAnnotation) {
       try {
         const result = await callClaude<TCResult>(SYSTEM_PROMPT, userMessage);
         if (result.is_tc_candidate) {
-          const comment = formatTCComment(result, tc.insertIndent);
-          await controller.preview(editor, comment, tc.insertLine);
+          const comment = formatTCComment(result, context.insertIndent);
+          await controller.preview(editor, comment, context.insertLine);
         } else {
           vscode.window.showInformationMessage(
             `No TC detected: ${result.not_tc_reason ?? 'no reason provided'}`,
