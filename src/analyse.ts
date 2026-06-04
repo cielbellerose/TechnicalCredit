@@ -6,6 +6,10 @@ import { callClaude } from '@/utils/claude';
 import { formatTCComment, TCResult } from '@/comment/formatComment';
 import { PendingAnnotation } from '@/comment/pendingAnnotation';
 import { createUserPrompt } from './prompts/userPrompts';
+import {
+  createHeuristicPrompt,
+  HEURISTIC_CATEGORIES,
+} from './prompts/heuristicPrompts';
 
 /** Analyses the active editor selection for Technical Credit patterns and previews an annotation if found. */
 export async function analyseForTC(controller: PendingAnnotation) {
@@ -35,13 +39,29 @@ export async function analyseForTC(controller: PendingAnnotation) {
     },
     async () => {
       try {
-        const result = await callClaude<TCResult>(SYSTEM_PROMPT, userPrompt);
-        if (result.is_tc_candidate) {
-          const comment = formatTCComment(result, context.insertIndent);
-          await controller.preview(editor, comment, context.insertLine);
-        } else {
+        const results: TCResult[] = [];
+
+        // Create claude calls for all heuristics
+        HEURISTIC_CATEGORIES.forEach((heuristic) => {
+          const heuristicPrompt = createHeuristicPrompt(heuristic);
+          callClaude<TCResult>(
+            SYSTEM_PROMPT + '\n\n' + heuristicPrompt,
+            userPrompt,
+          ).then((result) => results.push(result));
+        });
+
+        // Add comments for all TC found
+        results
+          .filter((r) => r.is_tc_candidate)
+          .forEach((result) => {
+            const comment = formatTCComment(result, context.insertIndent);
+            controller.preview(editor, comment, context.insertLine);
+          });
+
+        // If no TC is found
+        if (results.length > 0 && results.every((r) => !r.is_tc_candidate)) {
           vscode.window.showInformationMessage(
-            `No TC detected: ${result.not_tc_reason ?? 'no reason provided'}`,
+            `No TC detected: ${results.map((r) => r.not_tc_reason).join('; ')}`,
           );
         }
       } catch (e) {
