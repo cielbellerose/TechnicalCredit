@@ -5,6 +5,7 @@ import { SYSTEM_PROMPT } from '@/prompts/systemPrompt';
 import { callClaude } from '@/utils/claude';
 import { formatTCComment, TCResult } from '@/comment/formatComment';
 import { PendingAnnotation } from '@/comment/pendingAnnotation';
+import { createUserPrompt } from './prompts/userPrompts';
 
 /** Analyses the active editor selection for Technical Credit patterns and previews an annotation if found. */
 export async function analyseForTC(controller: PendingAnnotation) {
@@ -17,24 +18,14 @@ export async function analyseForTC(controller: PendingAnnotation) {
 
   const context = await buildContext(editor);
 
-  if (!context.constructMetrics) {
+  if (!context) {
     vscode.window.showErrorMessage(
       'Analyse for TC: cursor is not inside a class or interface.',
     );
     return;
   }
 
-  const userMessage = [
-    `Analyse the following code construct for Technical Credit patterns.`,
-    `File: ${context.fileName}  Language: ${context.language}`,
-    context.importLines.length > 0
-      ? `Imports:\n${context.importLines.join('\n')}`
-      : null,
-    `Pre-extracted construct metrics (tree-sitter):\n${JSON.stringify(context.constructMetrics, null, 2)}`,
-    `Class source:\n${context.constructMetrics.classSource}`,
-  ]
-    .filter(Boolean)
-    .join('\n');
+  const userPrompt = createUserPrompt(context);
 
   await vscode.window.withProgress(
     {
@@ -44,7 +35,7 @@ export async function analyseForTC(controller: PendingAnnotation) {
     },
     async () => {
       try {
-        const result = await callClaude<TCResult>(SYSTEM_PROMPT, userMessage);
+        const result = await callClaude<TCResult>(SYSTEM_PROMPT, userPrompt);
         if (result.is_tc_candidate) {
           const comment = formatTCComment(result, context.insertIndent);
           await controller.preview(editor, comment, context.insertLine);
