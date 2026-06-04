@@ -1,13 +1,16 @@
-export type HeuristicCategory =
-  | 'abstraction'
-  | 'modularity'
-  | 'api-stability'
-  | 'automation'
-  | 'knowledge-preservation'
-  | 'configurability'
-  | 'observability'
-  | 'reusability'
-  | 'compliance-readiness';
+export const HEURISTIC_CATEGORIES = [
+  'abstraction',
+  'modularity',
+  'api-stability',
+  'automation',
+  'knowledge-preservation',
+  'configurability',
+  'observability',
+  'reusability',
+  'compliance-readiness',
+];
+
+export type HeuristicCategory = (typeof HEURISTIC_CATEGORIES)[number];
 
 export function createHeuristicPrompt(heuristic: HeuristicCategory): string {
   const heuristicPrompts: Record<HeuristicCategory, string> = {
