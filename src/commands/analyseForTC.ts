@@ -52,8 +52,7 @@ export function registerAnalyseForTC(
         },
         async () => {
           try {
-            const raw = await callClaude(SYSTEM_PROMPT, userMessage);
-            const result = JSON.parse('{' + raw) as TCResult;
+            const result = await callClaude<TCResult>(SYSTEM_PROMPT, userMessage);
             if (result.is_tc_candidate) {
               const comment = formatTCComment(result, tc.insertIndent);
               await controller.preview(editor, comment, tc.insertLine);
