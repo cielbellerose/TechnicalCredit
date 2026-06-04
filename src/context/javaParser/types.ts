@@ -17,6 +17,8 @@ export interface ConstructMetrics {
   annotations: string[];
   startRow: number;
   enclosingClassStartRow: number | null;
+  /** Full source text of the class or interface being analysed. */
+  classSource: string;
   classMetrics: {
     superclass: string | null;
     implementedInterfaces: { name: string; resolvedImport: string | null }[];
