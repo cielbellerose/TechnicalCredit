@@ -1,8 +1,8 @@
-name: TypeScript Check
+name: Formatting Check
 on:
   pull_request:
 jobs:
-  run-tsc-check:
+  run-format-check:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -14,5 +14,5 @@ jobs:
           node-version: 'lts/*'
           cache: 'npm'
       - run: npm ci
-      - name: Run tsc check
-        run: npm run tsc:check
+      - name: Run formatting check
+        run: npm run format:check
