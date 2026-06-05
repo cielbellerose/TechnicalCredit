@@ -1,62 +1,37 @@
-import Anthropic from '@anthropic-ai/sdk';
 import * as fs from 'fs';
-import dotenv from 'dotenv';
 import * as path from 'path';
 
-dotenv.config({ path: path.join(__dirname, '..', '.env') });
+import { callClaude } from '../src/utils/claude';
+import {
+  HEURISTIC_CATEGORIES,
+  HeuristicCategory,
+  createHeuristicPrompt,
+  getHeuristicCriteria,
+} from '../src/prompts/heuristics';
+import { SYSTEM_PROMPT } from '../src/prompts/systemPrompt';
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
-const HEURISTICS = [
-  'abstraction',
-  'modularity',
-  'api-stability',
-  'automation',
-  'knowledge-preservation',
-  'configurability',
-  'observability',
-  'reusability',
-  'compliance-readiness',
-] as const;
-
-type Heuristic = (typeof HEURISTICS)[number];
-
-// Fitness = variance + ACCURACY_WEIGHT * (1 - accuracy) * 10
-// Multiplying (1 - accuracy) by 10 brings it to the same scale as typical variance values.
-// ACCURACY_WEIGHT < 1 keeps variance as the dominant signal.
+// Runs per test case — used for both consistency and majority-vote accuracy
+const CONSISTENCY_SAMPLES = 3;
+// ACCURACY_WEIGHT < 1 keeps variance as the dominant signal
 const ACCURACY_WEIGHT = 0.7;
-const SAMPLES = 5;
-const SCORE_THRESHOLD = 5; // > threshold = TC detected, <= threshold = not detected
+const ITERATIONS = 5;
 
-// Representative tree-sitter signals used for the main sampling loop
-const detectedSignals: Record<Heuristic, string> = {
-  abstraction:
-    '3 pure interfaces with no fields, 2 with separate implementations in different packages',
-  modularity:
-    '2 classes implement interfaces from different packages, 5 from same package',
-  'api-stability':
-    '3 public methods marked @Deprecated, 1 versioned endpoint, 2 potential breaking changes',
-  automation:
-    '4 constructors use injection, CI config present, 2 manual deployment scripts',
-  'knowledge-preservation':
-    '2 ADR documents found, 8 classes with no javadoc, 3 with inline comments',
-  configurability:
-    '6 hardcoded values found, 3 externalized via @Value, 1 config class',
-  observability: '1 Micrometer import found, no MDC usage detected',
-  reusability:
-    '4 utility classes imported from shared modules, 2 duplicate helper implementations',
-  'compliance-readiness':
-    '2 audit log implementations, no data retention policy, 1 GDPR annotation',
-};
+// Appended when evaluating heuristic criteria (simple binary output)
+const BINARY_OUTPUT_FORMAT =
+  '\n\nRespond with ONLY a JSON object: {"detected": true} or {"detected": false}. No explanation, no other text.';
 
-// --- Test case infrastructure ---
+// Wraps raw criteria with a category header for per-heuristic evaluation
+function wrapCriteria(heuristic: HeuristicCategory, criteria: string): string {
+  const label = heuristic.toUpperCase().replace(/-/g, ' ');
+  return `You are detecting ${label} Technical Credit.\n\n${criteria}`;
+}
+
+// --- Test cases ---
 
 interface TestCase {
   name: string;
   code: string;
-  heuristic: Heuristic;
+  heuristic: HeuristicCategory;
   is_tc_candidate: boolean;
   rationale: string;
 }
@@ -64,20 +39,13 @@ interface TestCase {
 function extractType(source: string, name: string): string {
   const header = new RegExp(`\\b(?:class|interface|enum|record)\\s+${name}\\b`);
   const match = header.exec(source);
-  if (!match) {
-    return '';
-  }
+  if (!match) { return ''; }
   const braceStart = source.indexOf('{', match.index);
-  if (braceStart === -1) {
-    return '';
-  }
+  if (braceStart === -1) { return ''; }
   let depth = 0;
   for (let i = braceStart; i < source.length; i++) {
-    if (source[i] === '{') {
-      depth++;
-    } else if (source[i] === '}' && --depth === 0) {
-      return source.slice(match.index, i + 1);
-    }
+    if (source[i] === '{') { depth++; }
+    else if (source[i] === '}' && --depth === 0) { return source.slice(match.index, i + 1); }
   }
   return '';
 }
@@ -87,273 +55,270 @@ function loadTestCases(): TestCase[] {
   const mock = fs.readFileSync(mockPath, 'utf8');
 
   return [
-    // abstraction (H1)
-    {
-      name: 'EventListener',
-      code: extractType(mock, 'EventListener'),
-      heuristic: 'abstraction',
-      is_tc_candidate: true,
-      rationale: 'Single-method interface, no fields — classic abstraction.',
-    },
-    {
-      name: 'Validator',
-      code: extractType(mock, 'Validator'),
-      heuristic: 'abstraction',
-      is_tc_candidate: true,
-      rationale: 'Interface with one method and no fields.',
-    },
-    {
-      name: 'Greetable',
-      code: extractType(mock, 'Greetable'),
-      heuristic: 'abstraction',
-      is_tc_candidate: true,
-      rationale: 'Interface with one void method and no fields.',
-    },
-    {
-      name: 'Calculator',
-      code: extractType(mock, 'Calculator'),
-      heuristic: 'abstraction',
-      is_tc_candidate: false,
-      rationale: 'Concrete class — not an interface.',
-    },
-    {
-      name: 'Constants',
-      code: extractType(mock, 'Constants'),
-      heuristic: 'abstraction',
-      is_tc_candidate: false,
-      rationale: 'Interface with fields — abstraction requires no fields.',
-    },
-    // observability (H5)
-    {
-      name: 'OrderMetrics',
-      code: extractType(mock, 'OrderMetrics'),
-      heuristic: 'observability',
-      is_tc_candidate: true,
-      rationale: 'Micrometer MeterRegistry field + counter usage.',
-    },
-    {
-      name: 'PaymentProcessor',
-      code: extractType(mock, 'PaymentProcessor'),
-      heuristic: 'observability',
-      is_tc_candidate: true,
-      rationale: '@Timed annotation instruments method latency.',
-    },
-    {
-      name: 'AuditLogger',
-      code: extractType(mock, 'AuditLogger'),
-      heuristic: 'observability',
-      is_tc_candidate: true,
-      rationale: 'MDC + structured key=value log line.',
-    },
-    {
-      name: 'NaivePrinter',
-      code: extractType(mock, 'NaivePrinter'),
-      heuristic: 'observability',
-      is_tc_candidate: false,
-      rationale: 'println string concatenation — no observability infra.',
-    },
-    {
-      name: 'UnstructuredLogger',
-      code: extractType(mock, 'UnstructuredLogger'),
-      heuristic: 'observability',
-      is_tc_candidate: false,
-      rationale: 'SLF4J logger but string concatenation — not structured.',
-    },
-    {
-      name: 'ReflectiveLoader',
-      code: extractType(mock, 'ReflectiveLoader'),
-      heuristic: 'observability',
-      is_tc_candidate: false,
-      rationale:
-        'Micrometer token only in a string literal — not a real import.',
-    },
+    // abstraction
+    { name: 'EventListener', code: extractType(mock, 'EventListener'), heuristic: 'abstraction', is_tc_candidate: true, rationale: 'Single-method interface, no fields.' },
+    { name: 'Validator', code: extractType(mock, 'Validator'), heuristic: 'abstraction', is_tc_candidate: true, rationale: 'Interface with one method and no fields.' },
+    { name: 'Greetable', code: extractType(mock, 'Greetable'), heuristic: 'abstraction', is_tc_candidate: true, rationale: 'Interface with one void method and no fields.' },
+    { name: 'Calculator', code: extractType(mock, 'Calculator'), heuristic: 'abstraction', is_tc_candidate: false, rationale: 'Concrete class — not an interface.' },
+    { name: 'Constants', code: extractType(mock, 'Constants'), heuristic: 'abstraction', is_tc_candidate: false, rationale: 'Interface with fields.' },
+    // observability
+    { name: 'OrderMetrics', code: extractType(mock, 'OrderMetrics'), heuristic: 'observability', is_tc_candidate: true, rationale: 'Micrometer MeterRegistry + counter.' },
+    { name: 'PaymentProcessor', code: extractType(mock, 'PaymentProcessor'), heuristic: 'observability', is_tc_candidate: true, rationale: '@Timed annotation.' },
+    { name: 'AuditLogger', code: extractType(mock, 'AuditLogger'), heuristic: 'observability', is_tc_candidate: true, rationale: 'MDC + structured logging.' },
+    { name: 'NaivePrinter', code: extractType(mock, 'NaivePrinter'), heuristic: 'observability', is_tc_candidate: false, rationale: 'println string concat.' },
+    { name: 'UnstructuredLogger', code: extractType(mock, 'UnstructuredLogger'), heuristic: 'observability', is_tc_candidate: false, rationale: 'SLF4J but string concat — not structured.' },
+    { name: 'ReflectiveLoader', code: extractType(mock, 'ReflectiveLoader'), heuristic: 'observability', is_tc_candidate: false, rationale: 'Micrometer only in a string literal.' },
   ];
 }
 
-// --- Sampling and scoring ---
+// --- Evaluation ---
 
-function buildScoringRequest(prompt: string, context: string): string {
-  const exampleScores = HEURISTICS.reduce(
-    (acc, h) => ({ ...acc, [h]: 5 }),
-    {} as Record<Heuristic, number>,
-  );
-  return `${prompt}\n\nContext:\n${context}\n\nYou must respond with ONLY a JSON object scoring each heuristic 0-10. No other text. Example:\n${JSON.stringify(exampleScores)}`;
+interface CaseResult {
+  name: string;
+  heuristic: HeuristicCategory;
+  expected: boolean;
+  runs: (boolean | null)[];
+  majority: boolean;
+  consistent: boolean;
+  correct: boolean;
 }
 
-async function callClaude(
-  content: string,
-): Promise<Record<Heuristic, number> | null> {
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 500,
-    messages: [{ role: 'user', content }],
-  });
-
-  const text = response.content
-    .filter((b) => b.type === 'text')
-    .map((b) => b.text)
-    .join('');
-
-  try {
-    return JSON.parse(text.replace(/```json|```/g, '').trim());
-  } catch {
-    console.warn('Failed to parse Claude response, skipping.');
-    return null;
-  }
+function summarise(caseResults: CaseResult[]): { variance: number; accuracy: number } {
+  const variance = 1 - caseResults.filter((r) => r.consistent).length / caseResults.length;
+  const accuracy = caseResults.filter((r) => r.correct).length / caseResults.length;
+  return { variance, accuracy };
 }
 
-async function samplePrompt(
-  prompt: string,
-): Promise<Record<Heuristic, number>[]> {
-  const signalContext = `Detected signals:\n${JSON.stringify(detectedSignals, null, 2)}`;
-  const results: Record<Heuristic, number>[] = [];
-
-  for (let i = 0; i < SAMPLES; i++) {
-    const scores = await callClaude(buildScoringRequest(prompt, signalContext));
-    if (scores) {
-      results.push(scores);
-      console.log(`  Sample ${i + 1}:`, scores);
-    }
-  }
-
-  return results;
-}
-
-async function evaluateAccuracy(
-  prompt: string,
+async function runCases(
+  systemPromptFn: (tc: TestCase) => string,
+  detectionKey: string,
   testCases: TestCase[],
-): Promise<number> {
-  let correct = 0;
+): Promise<CaseResult[]> {
+  const caseResults: CaseResult[] = [];
 
   for (const tc of testCases) {
-    const scores = await callClaude(
-      buildScoringRequest(prompt, `Java code:\n${tc.code}`),
-    );
-    if (!scores) {
-      continue;
+    const systemPrompt = systemPromptFn(tc);
+    const runs: (boolean | null)[] = [];
+
+    for (let i = 0; i < CONSISTENCY_SAMPLES; i++) {
+      try {
+        const result = await callClaude<Record<string, boolean>>(systemPrompt, tc.code);
+        runs.push(result[detectionKey] ?? null);
+      } catch {
+        console.warn(`  Failed to parse response for ${tc.name}, skipping run.`);
+        runs.push(null);
+      }
     }
 
-    const score = scores[tc.heuristic];
-    const predicted = score > SCORE_THRESHOLD;
-    const hit = predicted === tc.is_tc_candidate;
+    const valid = runs.filter((r) => r !== null) as boolean[];
+    const trueCount = valid.filter(Boolean).length;
+    const majority = trueCount > valid.length / 2;
+    const consistent = valid.every((r) => r === majority);
+    const correct = majority === tc.is_tc_candidate;
 
     console.log(
-      `  [${tc.heuristic}] ${tc.name}: score=${score} expected=${tc.is_tc_candidate ? 'TC' : 'not TC'} → ${hit ? '✓' : '✗'}`,
+      `  [${tc.heuristic}] ${tc.name}: runs=[${valid.join(',')}] majority=${majority} expected=${tc.is_tc_candidate} → ${consistent ? 'consistent' : 'INCONSISTENT'} ${correct ? '✓' : '✗'}`,
     );
 
-    if (hit) {
-      correct++;
-    }
+    caseResults.push({ name: tc.name, heuristic: tc.heuristic, expected: tc.is_tc_candidate, runs, majority, consistent, correct });
   }
 
-  return correct / testCases.length;
+  return caseResults;
 }
 
-// --- Fitness and optimization ---
-
-function computeVariance(samples: Record<Heuristic, number>[]): number {
-  return (
-    HEURISTICS.reduce((total, h) => {
-      const values = samples.map((s) => s[h]);
-      const mean = values.reduce((a, b) => a + b, 0) / values.length;
-      const variance =
-        values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length;
-      return total + variance;
-    }, 0) / HEURISTICS.length
-  );
+function computeFitness(variance: number, accuracy: number): number {
+  return variance + ACCURACY_WEIGHT * (1 - accuracy);
 }
 
-function combinedFitness(variance: number, accuracy: number): number {
-  return variance + ACCURACY_WEIGHT * (1 - accuracy) * 10;
+// --- Shared history / result types ---
+
+interface HistoryEntry {
+  prompt: string;
+  variance: number;
+  accuracy: number;
+  fitness: number;
 }
 
-async function proposeNewPrompt(
-  history: {
-    prompt: string;
-    variance: number;
-    accuracy: number;
-    fitness: number;
-  }[],
-): Promise<string> {
-  const historyText = history
+interface OproResult {
+  bestPrompt: string;
+  variance: number;
+  accuracy: number;
+  fitness: number;
+  history: HistoryEntry[];
+}
+
+// --- Per-heuristic OPRO ---
+// Optimizes the raw detection criteria for a single heuristic.
+// The system prompt is fixed; only the criteria text is optimized.
+
+async function evaluateHeuristicCriteria(
+  criteria: string,
+  heuristic: HeuristicCategory,
+  testCases: TestCase[],
+): Promise<{ variance: number; accuracy: number; caseResults: CaseResult[] }> {
+  const relevant = testCases.filter((tc) => tc.heuristic === heuristic);
+  const systemPromptFn = (_tc: TestCase) =>
+    wrapCriteria(heuristic, criteria) + BINARY_OUTPUT_FORMAT;
+  const caseResults = await runCases(systemPromptFn, 'detected', relevant);
+  return { ...summarise(caseResults), caseResults };
+}
+
+async function proposeNewCriteria(heuristic: HeuristicCategory, history: HistoryEntry[]): Promise<string> {
+  const sorted = [...history].sort((a, b) => a.fitness - b.fitness);
+  const best = sorted[0];
+  const label = heuristic.toUpperCase().replace(/-/g, ' ');
+
+  const historyText = sorted
     .map(
       (h, i) =>
-        `Attempt ${i + 1}:\nPrompt: ${h.prompt}\nVariance: ${h.variance.toFixed(4)} | Accuracy: ${(h.accuracy * 100).toFixed(1)}% | Fitness: ${h.fitness.toFixed(4)}`,
+        `Criteria ${i + 1} [fitness=${h.fitness.toFixed(3)}, variance=${h.variance.toFixed(2)}, accuracy=${(h.accuracy * 100).toFixed(0)}%]:\n${h.prompt}`,
     )
-    .join('\n\n');
+    .join('\n\n---\n\n');
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 1000,
-    messages: [
-      {
-        role: 'user',
-        content: `You are optimizing a prompt for scoring Java technical credit across 9 heuristic categories on a scale of 0-10.
+  const result = await callClaude<{ prompt: string }>(
+    `You are optimizing detection criteria for ${label} Technical Credit in Java code. Return a JSON object with a single key "prompt" containing the new criteria text.`,
+    `The criteria is appended after "You are detecting ${label} Technical Credit." and before output format instructions. The user message is a raw Java code snippet. The model outputs {"detected": true/false}.
 
-The heuristics are: ${HEURISTICS.join(', ')}.
-
-Fitness (lower is better) = variance + ${ACCURACY_WEIGHT} * (1 - accuracy) * 10
-- Variance measures consistency across repeated runs (lower = more consistent).
-- Accuracy measures correctness on labeled test cases (higher = more correct).
+Fitness (lower is better) = variance + ${ACCURACY_WEIGHT} * (1 - accuracy)
+- Variance: fraction of test cases with inconsistent answers across ${CONSISTENCY_SAMPLES} runs (0 = fully consistent).
+- Accuracy: fraction of test cases where the majority answer was correct (1 = perfect).
 - Variance is the dominant signal.
 
-Here are previous attempts:
+Best fitness so far: ${best.fitness.toFixed(3)}
+
+Previous criteria (best → worst):
 
 ${historyText}
 
-Propose a better prompt. Return only the prompt text, nothing else.`,
-      },
-    ],
-  });
+Write NEW criteria that takes a meaningfully different approach. Do not include output format instructions.`,
+  );
 
-  return response.content
-    .filter((b) => b.type === 'text')
-    .map((b) => b.text)
-    .join('');
+  console.log(`\n  → Proposed: ${result.prompt.slice(0, 120)}${result.prompt.length > 120 ? '...' : ''}`);
+  return result.prompt;
 }
 
-async function opro(initialPrompt: string, iterations: number) {
-  const testCases = loadTestCases();
-  const history: {
-    prompt: string;
-    variance: number;
-    accuracy: number;
-    fitness: number;
-  }[] = [];
-  let currentPrompt = initialPrompt;
+async function oproHeuristic(
+  heuristic: HeuristicCategory,
+  testCases: TestCase[],
+): Promise<OproResult> {
+  const history: HistoryEntry[] = [];
+  let currentCriteria = getHeuristicCriteria(heuristic);
 
-  for (let i = 0; i < iterations; i++) {
-    console.log(`\n=== Iteration ${i + 1} ===`);
-    console.log('Prompt:', currentPrompt);
-
-    console.log('\nSampling prompt for variance...');
-    const samples = await samplePrompt(currentPrompt);
-    const variance = samples.length > 0 ? computeVariance(samples) : Infinity;
-
-    console.log('\nEvaluating accuracy on test cases...');
-    const accuracy = await evaluateAccuracy(currentPrompt, testCases);
-
-    const fitness = combinedFitness(variance, accuracy);
-    console.log(
-      `\nVariance: ${variance.toFixed(4)} | Accuracy: ${(accuracy * 100).toFixed(1)}% | Fitness: ${fitness.toFixed(4)}`,
-    );
-
-    history.push({ prompt: currentPrompt, variance, accuracy, fitness });
-
-    if (i < iterations - 1) {
-      currentPrompt = await proposeNewPrompt(history);
+  for (let i = 0; i < ITERATIONS; i++) {
+    console.log(`\n=== [${heuristic}] Iteration ${i + 1}/${ITERATIONS} ===`);
+    const { variance, accuracy } = await evaluateHeuristicCriteria(currentCriteria, heuristic, testCases);
+    const f = computeFitness(variance, accuracy);
+    console.log(`  Variance=${variance.toFixed(3)} Accuracy=${(accuracy * 100).toFixed(0)}% Fitness=${f.toFixed(3)}`);
+    history.push({ prompt: currentCriteria, variance, accuracy, fitness: f });
+    if (i < ITERATIONS - 1) {
+      currentCriteria = await proposeNewCriteria(heuristic, history);
     }
   }
 
   const best = history.reduce((a, b) => (a.fitness < b.fitness ? a : b));
-  console.log('\n--- Best Prompt ---');
-  console.log(best.prompt);
-  console.log(
-    `Variance: ${best.variance.toFixed(4)} | Accuracy: ${(best.accuracy * 100).toFixed(1)}% | Fitness: ${best.fitness.toFixed(4)}`,
-  );
-  return best;
+  console.log(`\n[${heuristic}] Best (fitness=${best.fitness.toFixed(3)}):\n${best.prompt}`);
+  return { bestPrompt: best.prompt, variance: best.variance, accuracy: best.accuracy, fitness: best.fitness, history };
 }
 
-const initialPrompt = `Score each of the following Java technical credit heuristics on a scale from 0 to 10, where 0 means the heuristic is completely absent and 10 means it is strongly present. Evaluate based on long-term maintainability, code quality, and sustainable development practices.`;
+// --- System prompt OPRO ---
+// Optimizes the shared system prompt while keeping all heuristic criteria fixed.
+// Uses the full TCResult schema; evaluates across all heuristics with test cases.
 
-opro(initialPrompt, 5);
+async function evaluateSystemPrompt(
+  systemPrompt: string,
+  testCases: TestCase[],
+): Promise<{ variance: number; accuracy: number; caseResults: CaseResult[] }> {
+  // Each test case uses the current system prompt + its heuristic's full criteria (with category header)
+  const systemPromptFn = (tc: TestCase) =>
+    systemPrompt + '\n\n' + createHeuristicPrompt(tc.heuristic);
+  const caseResults = await runCases(systemPromptFn, 'is_tc_candidate', testCases);
+  return { ...summarise(caseResults), caseResults };
+}
+
+async function proposeNewSystemPrompt(history: HistoryEntry[]): Promise<string> {
+  const sorted = [...history].sort((a, b) => a.fitness - b.fitness);
+  const best = sorted[0];
+
+  const historyText = sorted
+    .map(
+      (h, i) =>
+        `System prompt ${i + 1} [fitness=${h.fitness.toFixed(3)}, variance=${h.variance.toFixed(2)}, accuracy=${(h.accuracy * 100).toFixed(0)}%]:\n${h.prompt}`,
+    )
+    .join('\n\n---\n\n');
+
+  const result = await callClaude<{ prompt: string }>(
+    `You are optimizing a shared system prompt used for detecting Technical Credit (TC) across multiple Java code heuristics. Return a JSON object with a single key "prompt" containing the new system prompt text.`,
+    `The system prompt is combined with per-heuristic detection criteria and a Java code snippet. The model outputs a JSON object with "is_tc_candidate": true/false (plus annotation fields). The system prompt defines what TC is, the output schema, and any shared reasoning instructions.
+
+Fitness (lower is better) = variance + ${ACCURACY_WEIGHT} * (1 - accuracy)
+- Variance: fraction of test cases with inconsistent answers across ${CONSISTENCY_SAMPLES} runs (0 = fully consistent).
+- Accuracy: fraction of test cases where the majority is_tc_candidate matched ground truth (1 = perfect).
+- Variance is the dominant signal.
+
+Best fitness so far: ${best.fitness.toFixed(3)}
+
+Previous system prompts (best → worst):
+
+${historyText}
+
+Write a NEW system prompt that takes a meaningfully different approach. The output must always include "is_tc_candidate": true/false in the JSON. Do not include per-heuristic criteria — those are appended separately.`,
+  );
+
+  console.log(`\n  → Proposed: ${result.prompt.slice(0, 120)}${result.prompt.length > 120 ? '...' : ''}`);
+  return result.prompt;
+}
+
+async function oproSystemPrompt(testCases: TestCase[]): Promise<OproResult> {
+  const history: HistoryEntry[] = [];
+  let currentPrompt = SYSTEM_PROMPT;
+
+  for (let i = 0; i < ITERATIONS; i++) {
+    console.log(`\n=== [system-prompt] Iteration ${i + 1}/${ITERATIONS} ===`);
+    const { variance, accuracy } = await evaluateSystemPrompt(currentPrompt, testCases);
+    const f = computeFitness(variance, accuracy);
+    console.log(`  Variance=${variance.toFixed(3)} Accuracy=${(accuracy * 100).toFixed(0)}% Fitness=${f.toFixed(3)}`);
+    history.push({ prompt: currentPrompt, variance, accuracy, fitness: f });
+    if (i < ITERATIONS - 1) {
+      currentPrompt = await proposeNewSystemPrompt(history);
+    }
+  }
+
+  const best = history.reduce((a, b) => (a.fitness < b.fitness ? a : b));
+  console.log(`\n[system-prompt] Best (fitness=${best.fitness.toFixed(3)}):\n${best.prompt}`);
+  return { bestPrompt: best.prompt, variance: best.variance, accuracy: best.accuracy, fitness: best.fitness, history };
+}
+
+// --- Main ---
+
+async function main() {
+  const testCases = loadTestCases();
+
+  const heuristicsWithCases = HEURISTIC_CATEGORIES.filter(
+    (h) => testCases.some((tc) => tc.heuristic === h),
+  );
+  const skipped = HEURISTIC_CATEGORIES.filter(
+    (h) => !testCases.some((tc) => tc.heuristic === h),
+  );
+
+  if (skipped.length > 0) {
+    console.log(`Skipping heuristics (no test cases): ${skipped.join(', ')}\n`);
+  }
+
+  const results: Record<string, OproResult> = {};
+
+  // Phase 1: optimize each heuristic's detection criteria
+  console.log('\n### Phase 1: Per-heuristic criteria optimization ###');
+  for (const heuristic of heuristicsWithCases) {
+    results[heuristic] = await oproHeuristic(heuristic, testCases);
+  }
+
+  // Phase 2: optimize the shared system prompt
+  console.log('\n### Phase 2: System prompt optimization ###');
+  results['system-prompt'] = await oproSystemPrompt(testCases);
+
+  const outputPath = path.join(__dirname, 'opro-results.json');
+  fs.writeFileSync(outputPath, JSON.stringify({ timestamp: new Date().toISOString(), results }, null, 2));
+  console.log(`\nResults saved to ${outputPath}`);
+}
+
+main();
