@@ -7,7 +7,7 @@ export interface TcContext {
   fileName: string;
   language: string;
   importLines: string[];
-  constructMetrics: ConstructMetrics | null;
+  constructMetrics: ConstructMetrics;
   insertLine: number;
   insertIndent: string;
 }
@@ -15,7 +15,7 @@ export interface TcContext {
 /** Builds the full TC context from the active editor state, including Java construct metrics. */
 export async function buildContext(
   editor: vscode.TextEditor,
-): Promise<TcContext> {
+): Promise<TcContext | null> {
   const { anchorLine, anchorCol } = resolveAnchor(editor);
   const fullSource = editor.document.getText();
 
@@ -25,6 +25,10 @@ export async function buildContext(
     editor.document.languageId === 'java'
       ? await extractMetrics(fullSource, anchorLine, anchorCol, importLines)
       : null;
+
+  if (!constructMetrics) {
+    return null;
+  }
 
   // Calculate line and indent to insert technical credit comment
   const insertLine = resolveInsertLine(constructMetrics, anchorLine);
