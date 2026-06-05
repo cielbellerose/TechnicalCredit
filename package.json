@@ -68,7 +68,8 @@
     "lint:fix": "eslint src --fix",
     "tsc:check": "tsc --noEmit",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "opro": "esbuild scripts/opro.ts --bundle --platform=node --external:@anthropic-ai/sdk --external:dotenv --outfile=dist/opro.js && node dist/opro.js"
   },
   "jest": {
     "preset": "ts-jest",
