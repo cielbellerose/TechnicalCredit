@@ -84,6 +84,16 @@ export class PendingAnnotation
       return;
     }
 
+    const edit = new vscode.WorkspaceEdit();
+    edit.delete(
+      item.uri,
+      new vscode.Range(
+        new vscode.Position(item.range.start.line, 0),
+        new vscode.Position(item.range.end.line + 1, 0),
+      ),
+    );
+    await vscode.workspace.applyEdit(edit);
+
     const deletedLineCount = item.range.end.line - item.range.start.line + 1;
     this.pendingItems.splice(index, 1);
 
@@ -103,16 +113,6 @@ export class PendingAnnotation
 
     this.refreshDecorations();
     this.changed.fire();
-
-    const edit = new vscode.WorkspaceEdit();
-    edit.delete(
-      item.uri,
-      new vscode.Range(
-        new vscode.Position(item.range.start.line, 0),
-        new vscode.Position(item.range.end.line + 1, 0),
-      ),
-    );
-    await vscode.workspace.applyEdit(edit);
   }
 
   /** Discards all pending annotations. */
@@ -121,13 +121,8 @@ export class PendingAnnotation
       return;
     }
 
-    const items = [...this.pendingItems].reverse();
-    this.pendingItems = [];
-    this.refreshDecorations();
-    this.changed.fire();
-
     const edit = new vscode.WorkspaceEdit();
-    for (const item of items) {
+    for (const item of [...this.pendingItems].reverse()) {
       edit.delete(
         item.uri,
         new vscode.Range(
@@ -137,6 +132,10 @@ export class PendingAnnotation
       );
     }
     await vscode.workspace.applyEdit(edit);
+
+    this.pendingItems = [];
+    this.refreshDecorations();
+    this.changed.fire();
   }
 
   provideCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
