@@ -75,7 +75,21 @@
     "testEnvironment": "node",
     "testMatch": [
       "<rootDir>/src/**/*.test.ts"
-    ]
+    ],
+    "setupFiles": [
+      "dotenv/config"
+    ],
+    "transform": {
+      "^.+\\.ts$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "esModuleInterop": true,
+            "isolatedModules": true
+          }
+        }
+      ]
+    }
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.3",
