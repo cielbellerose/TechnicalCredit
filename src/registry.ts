@@ -17,15 +17,15 @@ export function register(context: vscode.ExtensionContext): void {
       annotationController,
     ),
 
-    // Finalizes the pending annotation: removes the styling and keeps the inserted text.
-    vscode.commands.registerCommand('technicalcredit.acceptTCComment', () => {
-      annotationController.accept();
+    // Finalizes the annotation: removes the styling and keeps the inserted text.
+    vscode.commands.registerCommand('technicalcredit.acceptTCComment', (id: string) => {
+      annotationController.accept(id);
     }),
 
-    // Discards the pending annotation by deleting the inserted lines.
+    // Discards the annotation by deleting the inserted lines.
     vscode.commands.registerCommand(
       'technicalcredit.dismissTCComment',
-      async () => await annotationController.dismiss(),
+      async (id: string) => await annotationController.dismiss(id),
     ),
 
     // Analyses the active editor selection for Technical Credit patterns.

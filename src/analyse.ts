@@ -53,21 +53,15 @@ export async function analyseForTC(controller: PendingAnnotation) {
           }),
         );
 
-        console.log(results);
+        const candidates = results.filter((r) => r.is_tc_candidate);
 
-        // Add comments for all TC found
-        results
-          .filter((r) => r.is_tc_candidate)
-          .forEach((result) => {
-            const comment = formatTCComment(result, context.insertIndent);
-            controller.preview(editor, comment, context.insertLine);
-          });
-
-        // If no TC is found
-        if (results.length > 0 && results.every((r) => !r.is_tc_candidate)) {
-          vscode.window.showInformationMessage(
-            `No TC detected: ${results.map((r) => r.not_tc_reason).join('; ')}`,
+        if (candidates.length > 0) {
+          const comments = candidates.map((r) =>
+            formatTCComment(r, context.insertIndent),
           );
+          await controller.previewAll(editor, comments, context.insertLine);
+        } else {
+          vscode.window.showInformationMessage('No TC detected in this class.');
         }
       } catch (e) {
         vscode.window.showErrorMessage(`Analyse for TC failed: ${e}`);
