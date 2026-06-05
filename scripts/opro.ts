@@ -1,14 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { callClaude } from '../src/utils/claude';
+import { callClaude } from '@/utils/claude';
 import {
   HEURISTIC_CATEGORIES,
   HeuristicCategory,
   createHeuristicPrompt,
   getHeuristicCriteria,
-} from '../src/prompts/heuristics';
-import { SYSTEM_PROMPT } from '../src/prompts/systemPrompt';
+} from '@/prompts/heuristics/index';
+import { SYSTEM_PROMPT } from '@/prompts/systemPrompt';
 
 // Runs per test case — used for both consistency and majority-vote accuracy
 const CONSISTENCY_SAMPLES = 3;
@@ -39,13 +39,20 @@ interface TestCase {
 function extractType(source: string, name: string): string {
   const header = new RegExp(`\\b(?:class|interface|enum|record)\\s+${name}\\b`);
   const match = header.exec(source);
-  if (!match) { return ''; }
+  if (!match) {
+    return '';
+  }
   const braceStart = source.indexOf('{', match.index);
-  if (braceStart === -1) { return ''; }
+  if (braceStart === -1) {
+    return '';
+  }
   let depth = 0;
   for (let i = braceStart; i < source.length; i++) {
-    if (source[i] === '{') { depth++; }
-    else if (source[i] === '}' && --depth === 0) { return source.slice(match.index, i + 1); }
+    if (source[i] === '{') {
+      depth++;
+    } else if (source[i] === '}' && --depth === 0) {
+      return source.slice(match.index, i + 1);
+    }
   }
   return '';
 }
@@ -56,18 +63,84 @@ function loadTestCases(): TestCase[] {
 
   return [
     // abstraction
-    { name: 'EventListener', code: extractType(mock, 'EventListener'), heuristic: 'abstraction', is_tc_candidate: true, rationale: 'Single-method interface, no fields.' },
-    { name: 'Validator', code: extractType(mock, 'Validator'), heuristic: 'abstraction', is_tc_candidate: true, rationale: 'Interface with one method and no fields.' },
-    { name: 'Greetable', code: extractType(mock, 'Greetable'), heuristic: 'abstraction', is_tc_candidate: true, rationale: 'Interface with one void method and no fields.' },
-    { name: 'Calculator', code: extractType(mock, 'Calculator'), heuristic: 'abstraction', is_tc_candidate: false, rationale: 'Concrete class — not an interface.' },
-    { name: 'Constants', code: extractType(mock, 'Constants'), heuristic: 'abstraction', is_tc_candidate: false, rationale: 'Interface with fields.' },
+    {
+      name: 'EventListener',
+      code: extractType(mock, 'EventListener'),
+      heuristic: 'abstraction',
+      is_tc_candidate: true,
+      rationale: 'Single-method interface, no fields.',
+    },
+    {
+      name: 'Validator',
+      code: extractType(mock, 'Validator'),
+      heuristic: 'abstraction',
+      is_tc_candidate: true,
+      rationale: 'Interface with one method and no fields.',
+    },
+    {
+      name: 'Greetable',
+      code: extractType(mock, 'Greetable'),
+      heuristic: 'abstraction',
+      is_tc_candidate: true,
+      rationale: 'Interface with one void method and no fields.',
+    },
+    {
+      name: 'Calculator',
+      code: extractType(mock, 'Calculator'),
+      heuristic: 'abstraction',
+      is_tc_candidate: false,
+      rationale: 'Concrete class — not an interface.',
+    },
+    {
+      name: 'Constants',
+      code: extractType(mock, 'Constants'),
+      heuristic: 'abstraction',
+      is_tc_candidate: false,
+      rationale: 'Interface with fields.',
+    },
     // observability
-    { name: 'OrderMetrics', code: extractType(mock, 'OrderMetrics'), heuristic: 'observability', is_tc_candidate: true, rationale: 'Micrometer MeterRegistry + counter.' },
-    { name: 'PaymentProcessor', code: extractType(mock, 'PaymentProcessor'), heuristic: 'observability', is_tc_candidate: true, rationale: '@Timed annotation.' },
-    { name: 'AuditLogger', code: extractType(mock, 'AuditLogger'), heuristic: 'observability', is_tc_candidate: true, rationale: 'MDC + structured logging.' },
-    { name: 'NaivePrinter', code: extractType(mock, 'NaivePrinter'), heuristic: 'observability', is_tc_candidate: false, rationale: 'println string concat.' },
-    { name: 'UnstructuredLogger', code: extractType(mock, 'UnstructuredLogger'), heuristic: 'observability', is_tc_candidate: false, rationale: 'SLF4J but string concat — not structured.' },
-    { name: 'ReflectiveLoader', code: extractType(mock, 'ReflectiveLoader'), heuristic: 'observability', is_tc_candidate: false, rationale: 'Micrometer only in a string literal.' },
+    {
+      name: 'OrderMetrics',
+      code: extractType(mock, 'OrderMetrics'),
+      heuristic: 'observability',
+      is_tc_candidate: true,
+      rationale: 'Micrometer MeterRegistry + counter.',
+    },
+    {
+      name: 'PaymentProcessor',
+      code: extractType(mock, 'PaymentProcessor'),
+      heuristic: 'observability',
+      is_tc_candidate: true,
+      rationale: '@Timed annotation.',
+    },
+    {
+      name: 'AuditLogger',
+      code: extractType(mock, 'AuditLogger'),
+      heuristic: 'observability',
+      is_tc_candidate: true,
+      rationale: 'MDC + structured logging.',
+    },
+    {
+      name: 'NaivePrinter',
+      code: extractType(mock, 'NaivePrinter'),
+      heuristic: 'observability',
+      is_tc_candidate: false,
+      rationale: 'println string concat.',
+    },
+    {
+      name: 'UnstructuredLogger',
+      code: extractType(mock, 'UnstructuredLogger'),
+      heuristic: 'observability',
+      is_tc_candidate: false,
+      rationale: 'SLF4J but string concat — not structured.',
+    },
+    {
+      name: 'ReflectiveLoader',
+      code: extractType(mock, 'ReflectiveLoader'),
+      heuristic: 'observability',
+      is_tc_candidate: false,
+      rationale: 'Micrometer only in a string literal.',
+    },
   ];
 }
 
@@ -83,9 +156,14 @@ interface CaseResult {
   correct: boolean;
 }
 
-function summarise(caseResults: CaseResult[]): { variance: number; accuracy: number } {
-  const variance = 1 - caseResults.filter((r) => r.consistent).length / caseResults.length;
-  const accuracy = caseResults.filter((r) => r.correct).length / caseResults.length;
+function summarise(caseResults: CaseResult[]): {
+  variance: number;
+  accuracy: number;
+} {
+  const variance =
+    1 - caseResults.filter((r) => r.consistent).length / caseResults.length;
+  const accuracy =
+    caseResults.filter((r) => r.correct).length / caseResults.length;
   return { variance, accuracy };
 }
 
@@ -102,10 +180,15 @@ async function runCases(
 
     for (let i = 0; i < CONSISTENCY_SAMPLES; i++) {
       try {
-        const result = await callClaude<Record<string, boolean>>(systemPrompt, tc.code);
+        const result = await callClaude<Record<string, boolean>>(
+          systemPrompt,
+          tc.code,
+        );
         runs.push(result[detectionKey] ?? null);
       } catch {
-        console.warn(`  Failed to parse response for ${tc.name}, skipping run.`);
+        console.warn(
+          `  Failed to parse response for ${tc.name}, skipping run.`,
+        );
         runs.push(null);
       }
     }
@@ -120,7 +203,15 @@ async function runCases(
       `  [${tc.heuristic}] ${tc.name}: runs=[${valid.join(',')}] majority=${majority} expected=${tc.is_tc_candidate} → ${consistent ? 'consistent' : 'INCONSISTENT'} ${correct ? '✓' : '✗'}`,
     );
 
-    caseResults.push({ name: tc.name, heuristic: tc.heuristic, expected: tc.is_tc_candidate, runs, majority, consistent, correct });
+    caseResults.push({
+      name: tc.name,
+      heuristic: tc.heuristic,
+      expected: tc.is_tc_candidate,
+      runs,
+      majority,
+      consistent,
+      correct,
+    });
   }
 
   return caseResults;
@@ -163,7 +254,10 @@ async function evaluateHeuristicCriteria(
   return { ...summarise(caseResults), caseResults };
 }
 
-async function proposeNewCriteria(heuristic: HeuristicCategory, history: HistoryEntry[]): Promise<string> {
+async function proposeNewCriteria(
+  heuristic: HeuristicCategory,
+  history: HistoryEntry[],
+): Promise<string> {
   const sorted = [...history].sort((a, b) => a.fitness - b.fitness);
   const best = sorted[0];
   const label = heuristic.toUpperCase().replace(/-/g, ' ');
@@ -193,7 +287,9 @@ ${historyText}
 Write NEW criteria that takes a meaningfully different approach. Do not include output format instructions.`,
   );
 
-  console.log(`\n  → Proposed: ${result.prompt.slice(0, 120)}${result.prompt.length > 120 ? '...' : ''}`);
+  console.log(
+    `\n  → Proposed: ${result.prompt.slice(0, 120)}${result.prompt.length > 120 ? '...' : ''}`,
+  );
   return result.prompt;
 }
 
@@ -206,9 +302,15 @@ async function oproHeuristic(
 
   for (let i = 0; i < ITERATIONS; i++) {
     console.log(`\n=== [${heuristic}] Iteration ${i + 1}/${ITERATIONS} ===`);
-    const { variance, accuracy } = await evaluateHeuristicCriteria(currentCriteria, heuristic, testCases);
+    const { variance, accuracy } = await evaluateHeuristicCriteria(
+      currentCriteria,
+      heuristic,
+      testCases,
+    );
     const f = computeFitness(variance, accuracy);
-    console.log(`  Variance=${variance.toFixed(3)} Accuracy=${(accuracy * 100).toFixed(0)}% Fitness=${f.toFixed(3)}`);
+    console.log(
+      `  Variance=${variance.toFixed(3)} Accuracy=${(accuracy * 100).toFixed(0)}% Fitness=${f.toFixed(3)}`,
+    );
     history.push({ prompt: currentCriteria, variance, accuracy, fitness: f });
     if (i < ITERATIONS - 1) {
       currentCriteria = await proposeNewCriteria(heuristic, history);
@@ -216,8 +318,16 @@ async function oproHeuristic(
   }
 
   const best = history.reduce((a, b) => (a.fitness < b.fitness ? a : b));
-  console.log(`\n[${heuristic}] Best (fitness=${best.fitness.toFixed(3)}):\n${best.prompt}`);
-  return { bestPrompt: best.prompt, variance: best.variance, accuracy: best.accuracy, fitness: best.fitness, history };
+  console.log(
+    `\n[${heuristic}] Best (fitness=${best.fitness.toFixed(3)}):\n${best.prompt}`,
+  );
+  return {
+    bestPrompt: best.prompt,
+    variance: best.variance,
+    accuracy: best.accuracy,
+    fitness: best.fitness,
+    history,
+  };
 }
 
 // --- System prompt OPRO ---
@@ -231,11 +341,17 @@ async function evaluateSystemPrompt(
   // Each test case uses the current system prompt + its heuristic's full criteria (with category header)
   const systemPromptFn = (tc: TestCase) =>
     systemPrompt + '\n\n' + createHeuristicPrompt(tc.heuristic);
-  const caseResults = await runCases(systemPromptFn, 'is_tc_candidate', testCases);
+  const caseResults = await runCases(
+    systemPromptFn,
+    'is_tc_candidate',
+    testCases,
+  );
   return { ...summarise(caseResults), caseResults };
 }
 
-async function proposeNewSystemPrompt(history: HistoryEntry[]): Promise<string> {
+async function proposeNewSystemPrompt(
+  history: HistoryEntry[],
+): Promise<string> {
   const sorted = [...history].sort((a, b) => a.fitness - b.fitness);
   const best = sorted[0];
 
@@ -264,7 +380,9 @@ ${historyText}
 Write a NEW system prompt that takes a meaningfully different approach. The output must always include "is_tc_candidate": true/false in the JSON. Do not include per-heuristic criteria — those are appended separately.`,
   );
 
-  console.log(`\n  → Proposed: ${result.prompt.slice(0, 120)}${result.prompt.length > 120 ? '...' : ''}`);
+  console.log(
+    `\n  → Proposed: ${result.prompt.slice(0, 120)}${result.prompt.length > 120 ? '...' : ''}`,
+  );
   return result.prompt;
 }
 
@@ -274,9 +392,14 @@ async function oproSystemPrompt(testCases: TestCase[]): Promise<OproResult> {
 
   for (let i = 0; i < ITERATIONS; i++) {
     console.log(`\n=== [system-prompt] Iteration ${i + 1}/${ITERATIONS} ===`);
-    const { variance, accuracy } = await evaluateSystemPrompt(currentPrompt, testCases);
+    const { variance, accuracy } = await evaluateSystemPrompt(
+      currentPrompt,
+      testCases,
+    );
     const f = computeFitness(variance, accuracy);
-    console.log(`  Variance=${variance.toFixed(3)} Accuracy=${(accuracy * 100).toFixed(0)}% Fitness=${f.toFixed(3)}`);
+    console.log(
+      `  Variance=${variance.toFixed(3)} Accuracy=${(accuracy * 100).toFixed(0)}% Fitness=${f.toFixed(3)}`,
+    );
     history.push({ prompt: currentPrompt, variance, accuracy, fitness: f });
     if (i < ITERATIONS - 1) {
       currentPrompt = await proposeNewSystemPrompt(history);
@@ -284,8 +407,16 @@ async function oproSystemPrompt(testCases: TestCase[]): Promise<OproResult> {
   }
 
   const best = history.reduce((a, b) => (a.fitness < b.fitness ? a : b));
-  console.log(`\n[system-prompt] Best (fitness=${best.fitness.toFixed(3)}):\n${best.prompt}`);
-  return { bestPrompt: best.prompt, variance: best.variance, accuracy: best.accuracy, fitness: best.fitness, history };
+  console.log(
+    `\n[system-prompt] Best (fitness=${best.fitness.toFixed(3)}):\n${best.prompt}`,
+  );
+  return {
+    bestPrompt: best.prompt,
+    variance: best.variance,
+    accuracy: best.accuracy,
+    fitness: best.fitness,
+    history,
+  };
 }
 
 // --- Main ---
@@ -293,8 +424,8 @@ async function oproSystemPrompt(testCases: TestCase[]): Promise<OproResult> {
 async function main() {
   const testCases = loadTestCases();
 
-  const heuristicsWithCases = HEURISTIC_CATEGORIES.filter(
-    (h) => testCases.some((tc) => tc.heuristic === h),
+  const heuristicsWithCases = HEURISTIC_CATEGORIES.filter((h) =>
+    testCases.some((tc) => tc.heuristic === h),
   );
   const skipped = HEURISTIC_CATEGORIES.filter(
     (h) => !testCases.some((tc) => tc.heuristic === h),
@@ -317,7 +448,10 @@ async function main() {
   results['system-prompt'] = await oproSystemPrompt(testCases);
 
   const outputPath = path.join(__dirname, 'opro-results.json');
-  fs.writeFileSync(outputPath, JSON.stringify({ timestamp: new Date().toISOString(), results }, null, 2));
+  fs.writeFileSync(
+    outputPath,
+    JSON.stringify({ timestamp: new Date().toISOString(), results }, null, 2),
+  );
   console.log(`\nResults saved to ${outputPath}`);
 }
 
