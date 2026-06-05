@@ -18,9 +18,12 @@ export function register(context: vscode.ExtensionContext): void {
     ),
 
     // Finalizes the annotation: removes the styling and keeps the inserted text.
-    vscode.commands.registerCommand('technicalcredit.acceptTCComment', (id: string) => {
-      annotationController.accept(id);
-    }),
+    vscode.commands.registerCommand(
+      'technicalcredit.acceptTCComment',
+      (id: string) => {
+        annotationController.accept(id);
+      },
+    ),
 
     // Discards the annotation by deleting the inserted lines.
     vscode.commands.registerCommand(

@@ -61,7 +61,11 @@ export class PendingAnnotation
         rangeStart + lines.length - 1,
         lines[lines.length - 1].length,
       );
-      this.pendingItems.push({ id: crypto.randomUUID(), uri: editor.document.uri, range });
+      this.pendingItems.push({
+        id: crypto.randomUUID(),
+        uri: editor.document.uri,
+        range,
+      });
       rangeStart += lines.length;
     }
 
