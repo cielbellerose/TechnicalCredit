@@ -42,13 +42,18 @@ export async function analyseForTC(controller: PendingAnnotation) {
         const results: TCResult[] = [];
 
         // Create claude calls for all heuristics
-        HEURISTIC_CATEGORIES.forEach((heuristic) => {
-          const heuristicPrompt = createHeuristicPrompt(heuristic);
-          callClaude<TCResult>(
-            SYSTEM_PROMPT + '\n\n' + heuristicPrompt,
-            userPrompt,
-          ).then((result) => results.push(result));
-        });
+        await Promise.all(
+          HEURISTIC_CATEGORIES.map(async (heuristic) => {
+            const heuristicPrompt = createHeuristicPrompt(heuristic);
+            const result = await callClaude<TCResult>(
+              SYSTEM_PROMPT + '\n\n' + heuristicPrompt,
+              userPrompt,
+            );
+            results.push(result);
+          }),
+        );
+
+        console.log(results);
 
         // Add comments for all TC found
         results
