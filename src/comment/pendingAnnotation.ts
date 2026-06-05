@@ -7,15 +7,15 @@ interface Pending {
 }
 
 /**
- * Tracks a single in-flight TC annotation preview and surfaces an Accept /
- * Dismiss CodeLens above it. The previewed comment is real (inserted) text
- * visually marked as pending via a dimmed whole-line decoration: Accept keeps
- * the text and clears the styling, Dismiss deletes the inserted lines.
+ * Tracks in-flight TC annotation previews and surfaces Accept / Dismiss CodeLenses
+ * above each one. Previewed comments are real inserted text marked as pending via a
+ * dimmed decoration: Accept keeps all text and clears styling, Dismiss deletes all
+ * inserted lines.
  */
 export class PendingAnnotation
   implements vscode.CodeLensProvider, vscode.Disposable
 {
-  private pending: Pending | undefined;
+  private pendingItems: Pending[] = [];
   private readonly decoration: vscode.TextEditorDecorationType;
   private readonly changed = new vscode.EventEmitter<void>();
 
@@ -33,89 +33,93 @@ export class PendingAnnotation
   }
 
   /**
-   * Inserts the given comment text above the analysed code and marks it
-   * pending. Any previously pending preview is dismissed first.
+   * Inserts the given comment text above the analysed code and marks it pending.
+   * Successive calls stack annotations above the same line, tracking line offsets.
    */
   async preview(
     editor: vscode.TextEditor,
     text: string,
     insertLine: number,
   ): Promise<void> {
-    if (this.pending) {
-      await this.dismiss();
-    }
+    const offset = this.pendingItems
+      .filter((p) => p.uri.toString() === editor.document.uri.toString())
+      .reduce((sum, p) => sum + p.range.end.line - p.range.start.line + 1, 0);
+
+    const actualLine = insertLine + offset;
 
     await editor.edit((builder) => {
-      builder.insert(new vscode.Position(insertLine, 0), `${text}\n`);
+      builder.insert(new vscode.Position(actualLine, 0), `${text}\n`);
     });
 
     const lines = text.split('\n');
     const range = new vscode.Range(
-      insertLine,
+      actualLine,
       0,
-      insertLine + lines.length - 1,
+      actualLine + lines.length - 1,
       lines[lines.length - 1].length,
     );
-    this.pending = { uri: editor.document.uri, range };
-    editor.setDecorations(this.decoration, [range]);
+
+    this.pendingItems.push({ uri: editor.document.uri, range });
+    editor.setDecorations(
+      this.decoration,
+      this.pendingItems.map((p) => p.range),
+    );
     this.changed.fire();
   }
 
-  /** ACCEPT: Finalizes the pending comment: removes the styling, keeps the text. */
+  /** ACCEPT: Finalizes all pending comments — removes styling, keeps text. */
   accept(): void {
     this.clearDecoration();
-    this.pending = undefined;
+    this.pendingItems = [];
     this.changed.fire();
   }
 
-  /** DISMISS: Discards the pending comment by deleting pending lines. */
+  /** DISMISS: Discards all pending comments by deleting their inserted lines. */
   async dismiss(): Promise<void> {
-    const pending = this.pending;
-    if (!pending) {
+    if (this.pendingItems.length === 0) {
       return;
     }
+
     this.clearDecoration();
-    this.pending = undefined;
+    const items = [...this.pendingItems];
+    this.pendingItems = [];
     this.changed.fire();
 
+    // Delete in reverse order so earlier ranges aren't shifted by later deletions
     const edit = new vscode.WorkspaceEdit();
-    edit.delete(
-      pending.uri,
-      new vscode.Range(
-        new vscode.Position(pending.range.start.line, 0),
-        new vscode.Position(pending.range.end.line + 1, 0),
-      ),
-    );
+    for (const pending of items.reverse()) {
+      edit.delete(
+        pending.uri,
+        new vscode.Range(
+          new vscode.Position(pending.range.start.line, 0),
+          new vscode.Position(pending.range.end.line + 1, 0),
+        ),
+      );
+    }
     await vscode.workspace.applyEdit(edit);
   }
 
   provideCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
-    const pending = this.pending;
-    if (!pending || document.uri.toString() !== pending.uri.toString()) {
-      return [];
-    }
-    const anchor = new vscode.Range(pending.range.start, pending.range.start);
-    return [
-      new vscode.CodeLens(anchor, {
-        title: '$(check) Accept',
-        command: 'technicalcredit.acceptTCComment',
-      }),
-      new vscode.CodeLens(anchor, {
-        title: '$(x) Dismiss',
-        command: 'technicalcredit.dismissTCComment',
-      }),
-    ];
+    return this.pendingItems
+      .filter((p) => p.uri.toString() === document.uri.toString())
+      .flatMap((p) => {
+        const anchor = new vscode.Range(p.range.start, p.range.start);
+        return [
+          new vscode.CodeLens(anchor, {
+            title: '$(check) Accept',
+            command: 'technicalcredit.acceptTCComment',
+          }),
+          new vscode.CodeLens(anchor, {
+            title: '$(x) Dismiss',
+            command: 'technicalcredit.dismissTCComment',
+          }),
+        ];
+      });
   }
 
   private clearDecoration(): void {
-    const pending = this.pending;
-    if (!pending) {
-      return;
-    }
     for (const editor of vscode.window.visibleTextEditors) {
-      if (editor.document.uri.toString() === pending.uri.toString()) {
-        editor.setDecorations(this.decoration, []);
-      }
+      editor.setDecorations(this.decoration, []);
     }
   }
 
