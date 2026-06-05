@@ -5,11 +5,11 @@ import { SYSTEM_PROMPT } from '@/prompts/systemPrompt';
 import { callClaude } from '@/utils/claude';
 import { formatTCComment, TCResult } from '@/comment/formatComment';
 import { PendingAnnotation } from '@/comment/pendingAnnotation';
-import { createUserPrompt } from './prompts/userPrompts';
+import { createUserPrompt } from '@/prompts/userPrompts';
 import {
   createHeuristicPrompt,
   HEURISTIC_CATEGORIES,
-} from './prompts/heuristicPrompts';
+} from '@/prompts/heuristics';
 
 /** Analyses the active editor selection for Technical Credit patterns and previews an annotation if found. */
 export async function analyseForTC(controller: PendingAnnotation) {
