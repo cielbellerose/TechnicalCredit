@@ -19,7 +19,7 @@ Return JSON with this exact structure:
 {
   "is_tc_candidate": boolean,
   "confidence": 1-5,
-  "category": "abstraction"|"modularity"|"api-stability"|"automation"|"compliance-readiness"|"configurability"|"observability"|"reusability"|"knowledge-preservation",
+  "category": "abstraction"|"modularity"|"api-stability"|"automation"|"compliance-readiness"|"configurability"|"observability"|"reusability",
   "benefit": "one sentence describing the long-term value",
   "conditions": "when this benefit will materialise",
   "signals": ["tag1", "tag2"],

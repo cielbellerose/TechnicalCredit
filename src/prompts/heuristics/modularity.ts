@@ -1,6 +1,4 @@
-export const prompt = `You are detecting MODULARITY Technical Credit.
-
-Look for:
+export const prompt = `Look for:
 - Package or module path named by domain (com.example.payments) not layer (com.example.controllers) — bounded context boundary.
 - Class with no public modifier — deliberate package-private encapsulation.
 - Few imports from other internal packages relative to class size — low fan-out, self-contained unit.

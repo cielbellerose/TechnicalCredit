@@ -1,6 +1,4 @@
-export const prompt = `You are detecting AUTOMATION Technical Credit.
-
-Look for:
+export const prompt = `Look for:
 - Code generation annotations that eliminate manually maintained boilerplate (@Builder, @Data, @Mapper, @Generated or equivalents).
 - Custom annotation processor or compile-time code generator.
 - Parametrised or data-driven tests — broad scenario coverage without duplication.
