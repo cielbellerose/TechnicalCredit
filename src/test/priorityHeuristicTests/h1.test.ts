@@ -14,7 +14,7 @@ describe('H1 — interface with no fields', () => {
   // --- Positive: interfaces with no fields ---
 
   test('EventListener → abstraction (single-method interface, no fields)', async () => {
-    const result = await analyseConstruct('EventListener');
+    const result = await analyseConstruct('EventListener', 'abstraction');
 
     expect(result.is_tc_candidate).toBe(true);
     expect(result.category).toBe('abstraction');
@@ -24,14 +24,14 @@ describe('H1 — interface with no fields', () => {
   });
 
   test('Validator → abstraction (one method, no fields)', async () => {
-    const result = await analyseConstruct('Validator');
+    const result = await analyseConstruct('Validator', 'abstraction');
 
     expect(result.is_tc_candidate).toBe(true);
     expect(result.category).toBe('abstraction');
   });
 
   test('Greetable → abstraction (one void method, no fields)', async () => {
-    const result = await analyseConstruct('Greetable');
+    const result = await analyseConstruct('Greetable', 'abstraction');
 
     expect(result.is_tc_candidate).toBe(true);
     expect(result.category).toBe('abstraction');
@@ -40,13 +40,13 @@ describe('H1 — interface with no fields', () => {
   // --- Negative: not an interface, or interface with fields ---
 
   test('Calculator → not TC (concrete class, not an interface)', async () => {
-    const result = await analyseConstruct('Calculator');
+    const result = await analyseConstruct('Calculator', 'abstraction');
 
     expect(result.is_tc_candidate).toBe(false);
   });
 
   test('Constants → not TC (interface, but it has fields — H1 requires none)', async () => {
-    const result = await analyseConstruct('Constants');
+    const result = await analyseConstruct('Constants', 'abstraction');
 
     expect(result.is_tc_candidate).toBe(false);
   });
