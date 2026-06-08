@@ -15,8 +15,7 @@ export function formatTCComment(result: TCResult, indent: string): string {
     `category: ${quote(result.category)},`,
     `conditions: ${quote(result.conditions)},`,
     `signals: [${result.signals.map(quote).join(', ')}],`,
-    // Placeholder until ADR linking is implemented.
-    `adr: 'ADR-000',`,
+    ...(result.adr ? [`adr: ${quote(result.adr)},`] : []),
   ];
   const body = fields.map((line) => `${indent}${line}`).join('\n');
   return `${indent}@TechnicalCredit({\n${body}\n${indent}})`;
