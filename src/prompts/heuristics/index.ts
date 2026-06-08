@@ -2,7 +2,6 @@ import { prompt as abstraction } from './abstraction';
 import { prompt as modularity } from './modularity';
 import { prompt as apiStability } from './api-stability';
 import { prompt as automation } from './automation';
-import { prompt as knowledgePreservation } from './knowledge-preservation';
 import { prompt as configurability } from './configurability';
 import { prompt as observability } from './observability';
 import { prompt as reusability } from './reusability';
@@ -13,7 +12,6 @@ export const HEURISTIC_CATEGORIES = [
   'modularity',
   'api-stability',
   'automation',
-  'knowledge-preservation',
   'configurability',
   'observability',
   'reusability',
@@ -27,7 +25,6 @@ const heuristicPrompts: Record<HeuristicCategory, string> = {
   modularity,
   'api-stability': apiStability,
   automation,
-  'knowledge-preservation': knowledgePreservation,
   configurability,
   observability,
   reusability,
