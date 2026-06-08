@@ -10,7 +10,7 @@ Select a Java construct (class, interface, method, or field) and run **Analyse f
 TC**. The extension uses Claude to evaluate the selected code against each Technical
 Credit category. If — and only if — the code actually exhibits Technical Credit, it
 suggests a `@TechnicalCredit` annotation describing the benefit, the conditions under
-which it holds, and a confidence score. Selecting a construct does not guarantee any
+which it holds, and the signals that justify it. Selecting a construct does not guarantee any
 annotation: code with no detectable Technical Credit yields no suggestions. When
 suggestions are produced, you preview each one inline and **Accept** or **Dismiss** it
 with a single click.
@@ -25,13 +25,17 @@ with a single click.
 1. **Context building** — When you trigger analysis, a [Tree-sitter](https://tree-sitter.github.io/)
    Java parser walks the AST from your cursor up to the nearest declaration and
    extracts structural metrics (fields, methods, imports, nested types).
-2. **Multi-heuristic analysis** — Nine specialised Claude agents run **in parallel**,
+2. **Multi-heuristic analysis** — Eight specialised Claude agents run **in parallel**,
    one per Technical Credit category:
    *abstraction, modularity, API stability, automation, compliance readiness,
-   configurability, observability, reusability,* and *knowledge preservation.*
+   configurability, observability,* and *reusability.*
    Each agent shares a common system prompt defining the TC schema but applies its
    own category-specific detection rules.
-3. **Preview & decide** — Only categories that actually detect Technical Credit
+3. **ADR matching** — If the workspace contains Architecture Decision Records
+   (markdown files under `docs/`), each detected candidate is matched against them
+   in a follow-up Claude call. A clear match links the annotation to that ADR's id
+   (e.g. `ADR-0007`); otherwise no `adr` field is emitted.
+4. **Preview & decide** — Only categories that actually detect Technical Credit
    produce a candidate; so a construct may yield several annotations, one, or none at all. 
    Any candidates are inserted as dimmed previews with **Accept** / **Dismiss** CodeLenses above.
    Accepting keeps the annotation; dismissing removes it.
@@ -39,7 +43,7 @@ with a single click.
 ## Requirements
 
 - [VS Code](https://code.visualstudio.com/) `^1.120.0`
-- [Node.js](https://nodejs.org/) 16+ (Node 18+ recommended)
+- [Node.js](https://nodejs.org/) 18+
 - [Anthropic API key](https://console.anthropic.com/) (the extension calls the
   Claude API at analysis time)
 
@@ -72,6 +76,7 @@ npm run compile
 | `npm run lint:fix` | Auto-fix lint issues |
 | `npm run tsc:check` | Type-check only |
 | `npm run format` | Format the codebase with Prettier |
+| `npm run opro` | Run the OPRO script to optimize heuristic detection criteria |
 
 ## Running the Extension
 
@@ -113,14 +118,17 @@ src/
 ├── analyse.ts                # Orchestrator: runs all heuristics in parallel
 ├── context/                  # Cursor → AST → construct metrics
 │   ├── buildContext.ts
+│   ├── findAdrs.ts           # Scans docs/ for ADR markdown + tc-* frontmatter
 │   └── javaParser/           # Tree-sitter init + metric extraction
 ├── comment/
+│   ├── tcResult.ts           # TCResult interface (model output → comment)
 │   ├── formatComment.ts      # TC JSON → @TechnicalCredit annotation
 │   └── pendingAnnotation.ts  # Preview decorations + Accept/Dismiss CodeLenses
 ├── prompts/
 │   ├── systemPrompt.ts       # Shared TC schema / response format
 │   ├── userPrompts.ts        # Builds the user message from context
-│   └── heuristics/           # 9 category-specific prompts
+│   ├── adrPrompt.ts          # Prompt for matching a candidate to an ADR
+│   └── heuristics/           # 8 category-specific prompts
 ├── utils/
 │   └── claude.ts             # Claude API client (model, timeout, JSON prefill)
 └── test/                     # Jest tests + Java fixtures
@@ -128,9 +136,12 @@ src/
 
 ## Next Steps
 
-- **ADR linking is not implemented.** Generated annotations emit a placeholder
-  `adr: 'ADR-000'` reference rather than a real Architecture Decision Record link.
 - **Java only.** Analysis depends on the Tree-sitter Java grammar; other languages are
   not yet supported.
-- **Requires network access and a valid API key.** Each analysis makes nine live
-  Claude API calls (30s timeout each); analysis fails without `ANTHROPIC_API_KEY` set.
+- **ADR matching requires a `docs/` folder.** ADRs are discovered only from markdown
+  files under `docs/` in the first workspace folder; annotations link to an ADR only
+  when one is present and clearly matches.
+- **Requires network access and a valid API key.** Each analysis makes eight live
+  Claude API calls (one per heuristic, 30s timeout each), plus one additional call
+  per detected candidate when ADRs are present. Analysis fails without
+  `ANTHROPIC_API_KEY` set.
