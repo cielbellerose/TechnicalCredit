@@ -7,7 +7,10 @@ Response format:
 { "adr": "ADR-nnnn" }  — the id of the ADR that clearly documents this pattern
 { "adr": null }        — if no ADR clearly documents this pattern`;
 
-export function createAdrUserPrompt(result: TCResult, adrs: AdrSummary[]): string {
+export function createAdrUserPrompt(
+  result: TCResult,
+  adrs: AdrSummary[],
+): string {
   const patternLines = [
     `category: ${result.category}`,
     `benefit: ${result.benefit}`,
