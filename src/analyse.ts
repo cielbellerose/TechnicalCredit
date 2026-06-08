@@ -1,10 +1,18 @@
 import * as vscode from 'vscode';
 
 import { buildContext } from '@/context/buildContext';
+import { findAdrs } from '@/context/findAdrs';
 import { SYSTEM_PROMPT } from '@/prompts/systemPrompt';
 import { callClaude } from '@/utils/claude';
-import { formatTCComment, TCResult } from '@/comment/formatComment';
+import { formatTCComment } from '@/comment/formatComment';
+import { TCResult } from '@/comment/tcResult';
 import { PendingAnnotation } from '@/comment/pendingAnnotation';
+import { createUserPrompt } from '@/prompts/userPrompts';
+import { ADR_SYSTEM_PROMPT, createAdrUserPrompt } from '@/prompts/adrPrompt';
+import {
+  createHeuristicPrompt,
+  HEURISTIC_CATEGORIES,
+} from '@/prompts/heuristics';
 
 /** Analyses the active editor selection for Technical Credit patterns and previews an annotation if found. */
 export async function analyseForTC(controller: PendingAnnotation) {
@@ -17,24 +25,17 @@ export async function analyseForTC(controller: PendingAnnotation) {
 
   const context = await buildContext(editor);
 
-  if (!context.constructMetrics) {
+  if (!context) {
     vscode.window.showErrorMessage(
       'Analyse for TC: cursor is not inside a class or interface.',
     );
     return;
   }
 
-  const userMessage = [
-    `Analyse the following code construct for Technical Credit patterns.`,
-    `File: ${context.fileName}  Language: ${context.language}`,
-    context.importLines.length > 0
-      ? `Imports:\n${context.importLines.join('\n')}`
-      : null,
-    `Pre-extracted construct metrics (tree-sitter):\n${JSON.stringify(context.constructMetrics, null, 2)}`,
-    `Class source:\n${context.constructMetrics.classSource}`,
-  ]
-    .filter(Boolean)
-    .join('\n');
+  const workspaceRoot =
+    vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? '';
+  const adrs = workspaceRoot ? findAdrs(workspaceRoot) : [];
+  const userPrompt = createUserPrompt(context);
 
   await vscode.window.withProgress(
     {
@@ -44,14 +45,41 @@ export async function analyseForTC(controller: PendingAnnotation) {
     },
     async () => {
       try {
-        const result = await callClaude<TCResult>(SYSTEM_PROMPT, userMessage);
-        if (result.is_tc_candidate) {
-          const comment = formatTCComment(result, context.insertIndent);
-          await controller.preview(editor, comment, context.insertLine);
-        } else {
-          vscode.window.showInformationMessage(
-            `No TC detected: ${result.not_tc_reason ?? 'no reason provided'}`,
+        const results: TCResult[] = [];
+
+        // Create claude calls for all heuristics
+        await Promise.all(
+          HEURISTIC_CATEGORIES.map(async (heuristic) => {
+            const heuristicPrompt = createHeuristicPrompt(heuristic);
+            const result = await callClaude<TCResult>(
+              SYSTEM_PROMPT + '\n\n' + heuristicPrompt,
+              userPrompt,
+            );
+            results.push(result);
+          }),
+        );
+
+        const candidates = results.filter((r) => r.is_tc_candidate);
+
+        if (candidates.length > 0) {
+          if (adrs.length > 0) {
+            await Promise.all(
+              candidates.map(async (r) => {
+                const match = await callClaude<{ adr: string | null }>(
+                  ADR_SYSTEM_PROMPT,
+                  createAdrUserPrompt(r, adrs),
+                );
+                r.adr = match.adr;
+              }),
+            );
+          }
+
+          const comments = candidates.map((r) =>
+            formatTCComment(r, context.insertIndent),
           );
+          await controller.previewAll(editor, comments, context.insertLine);
+        } else {
+          vscode.window.showInformationMessage('No TC detected in this class.');
         }
       } catch (e) {
         vscode.window.showErrorMessage(`Analyse for TC failed: ${e}`);
