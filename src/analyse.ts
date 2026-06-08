@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 
 import { buildContext } from '@/context/buildContext';
+import { findAdrs } from '@/context/findAdrs';
 import { SYSTEM_PROMPT } from '@/prompts/systemPrompt';
 import { callClaude } from '@/utils/claude';
 import { formatTCComment } from '@/comment/formatComment';
@@ -30,7 +31,10 @@ export async function analyseForTC(controller: PendingAnnotation) {
     return;
   }
 
-  const userPrompt = createUserPrompt(context);
+  const workspaceRoot =
+    vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? '';
+  const adrs = workspaceRoot ? findAdrs(workspaceRoot) : [];
+  const userPrompt = createUserPrompt(context, adrs);
 
   await vscode.window.withProgress(
     {
