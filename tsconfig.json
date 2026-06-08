@@ -10,5 +10,6 @@
     "noUnusedParameters": true,
     "types": ["jest", "node", "emscripten"],
     "paths": { "@/*": ["./src/*"] }
-  }
+  },
+  "exclude": ["scripts", "dist"]
 }

@@ -2,7 +2,6 @@ import { prompt as abstraction } from './abstraction';
 import { prompt as modularity } from './modularity';
 import { prompt as apiStability } from './api-stability';
 import { prompt as automation } from './automation';
-import { prompt as knowledgePreservation } from './knowledge-preservation';
 import { prompt as configurability } from './configurability';
 import { prompt as observability } from './observability';
 import { prompt as reusability } from './reusability';
@@ -13,7 +12,6 @@ export const HEURISTIC_CATEGORIES = [
   'modularity',
   'api-stability',
   'automation',
-  'knowledge-preservation',
   'configurability',
   'observability',
   'reusability',
@@ -27,13 +25,19 @@ const heuristicPrompts: Record<HeuristicCategory, string> = {
   modularity,
   'api-stability': apiStability,
   automation,
-  'knowledge-preservation': knowledgePreservation,
   configurability,
   observability,
   reusability,
   'compliance-readiness': complianceReadiness,
 };
 
-export function createHeuristicPrompt(heuristic: HeuristicCategory): string {
+/** Returns the raw detection criteria for a heuristic (no category header). Used by OPRO to optimize criteria in isolation. */
+export function getHeuristicCriteria(heuristic: HeuristicCategory): string {
   return heuristicPrompts[heuristic];
+}
+
+/** Returns the full heuristic prompt including a category header. Use this everywhere outside OPRO. */
+export function createHeuristicPrompt(heuristic: HeuristicCategory): string {
+  const label = heuristic.toUpperCase().replace(/-/g, ' ');
+  return `Detecting: ${label} Technical Credit.\n\n${heuristicPrompts[heuristic]}`;
 }
