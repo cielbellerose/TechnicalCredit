@@ -12,7 +12,7 @@ import { ADR_SYSTEM_PROMPT, createAdrUserPrompt } from '@/prompts/adrPrompt';
 import {
   createHeuristicPrompt,
   HEURISTIC_CATEGORIES,
-} from '@/prompts/heuristics';
+} from '@/prompts/categories';
 
 /** Analyses the active editor selection for Technical Credit patterns and previews an annotation if found. */
 export async function analyseForTC(controller: PendingAnnotation) {

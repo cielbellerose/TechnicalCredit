@@ -9,7 +9,8 @@ When TC is detected, populate these fields:
 | Anticipated benefit | benefit | Free text | Long-term value this construct creates |
 | TC category | category | Enum | The category you are detecting |
 | Realisation conditions | conditions | Free text | Circumstances under which the benefit materialises |
-| Observable signals | signals | Tag list | Evidence that TC is being realised or eroding |
+| Observable signals | signals | Tag list | Evidence that TC is being realised, chosen only from the detecting category's allowlist |
+| ADR reference | adr | ADR-n | Links to the ADR decision that created this TC (optional) |
 
 ## Response Format
 
@@ -20,7 +21,7 @@ Return JSON with this exact structure:
   "category": "abstraction"|"modularity"|"api-stability"|"automation"|"compliance-readiness"|"configurability"|"observability"|"reusability",
   "benefit": "one sentence describing the long-term value",
   "conditions": "when this benefit will materialise",
-  "signals": ["tag1", "tag2"],
+  "signals": ["signal-from-allowlist", ...],
   "rationale": "brief explanation of why this is TC",
   "not_tc_reason": "if not TC, why not (null if is_tc_candidate)"
 }`;
