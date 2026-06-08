@@ -1,4 +1,4 @@
-import { analyseConstruct } from './support/analyseLive';
+import { analyseConstruct } from '../support/analyseLive';
 
 /**
  * H1 — interface with no fields → abstraction.

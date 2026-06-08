@@ -1,4 +1,4 @@
-import { analyseConstruct } from './support/analyseLive';
+import { analyseConstruct } from '../support/analyseLive';
 
 /**
  * H5 — Micrometer / structured-logging usage (observability).

@@ -1,4 +1,4 @@
-import { analyseConstruct } from './support/analyseLive';
+import { analyseConstruct } from '../support/analyseLive';
 
 /**
  * H4 — class-name suffix matching → abstraction / reusability.
