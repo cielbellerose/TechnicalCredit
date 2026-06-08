@@ -2,12 +2,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { buildContextFromSource } from '../../context/buildContext';
+import { setExtensionPath } from '../../context/javaParser';
 import { SYSTEM_PROMPT } from '../../prompts/systemPrompt';
 import { createUserPrompt } from '../../prompts/userPrompts';
 import { callClaude } from '../../utils/claude';
 import { createHeuristicPrompt } from '../../prompts/heuristics';
 import type { HeuristicCategory } from '../../prompts/heuristics';
 import { TCResult } from '../../comment/tcResult';
+
+setExtensionPath(path.join(__dirname, '../../../'));
 
 const MOCK_SOURCE = fs.readFileSync(
   path.join(__dirname, '../mockCode/MockTest.java'),
