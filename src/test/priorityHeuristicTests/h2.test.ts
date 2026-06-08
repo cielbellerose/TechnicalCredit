@@ -23,21 +23,21 @@ describe('H2 — class implementing interface from a different package', () => {
   // --- Positive: class implements an interface from a DIFFERENT package ---
 
   test('JpaUserRepository → TC (implements com.example.domain.IUserRepository — impl bound to a domain-package port)', async () => {
-    const result = await analyseConstruct('JpaUserRepository');
+    const result = await analyseConstruct('JpaUserRepository', 'abstraction');
 
     expect(result.is_tc_candidate).toBe(true);
     expect(H2_CATEGORIES).toContain(result.category);
   });
 
   test('StripeGateway → TC (implements com.example.payment.api.PaymentGateway — adapter of a port from another package)', async () => {
-    const result = await analyseConstruct('StripeGateway');
+    const result = await analyseConstruct('StripeGateway', 'abstraction');
 
     expect(result.is_tc_candidate).toBe(true);
     expect(H2_CATEGORIES).toContain(result.category);
   });
 
   test('RedisCacheStore → TC (implements com.example.cache.spi.CacheStore — infra impl of a cross-package SPI interface)', async () => {
-    const result = await analyseConstruct('RedisCacheStore');
+    const result = await analyseConstruct('RedisCacheStore', 'abstraction');
 
     expect(result.is_tc_candidate).toBe(true);
     expect(H2_CATEGORIES).toContain(result.category);
@@ -46,13 +46,16 @@ describe('H2 — class implementing interface from a different package', () => {
   // --- Negative: class implements an interface from the SAME package ---
 
   test('InMemoryUserStore → not TC (implements same-package UserStore — no package boundary crossed)', async () => {
-    const result = await analyseConstruct('InMemoryUserStore');
+    const result = await analyseConstruct('InMemoryUserStore', 'abstraction');
 
     expect(result.is_tc_candidate).toBe(false);
   });
 
   test('StrictLocalValidator → not TC (implements same-package LocalValidator — contract and impl live together)', async () => {
-    const result = await analyseConstruct('StrictLocalValidator');
+    const result = await analyseConstruct(
+      'StrictLocalValidator',
+      'abstraction',
+    );
 
     expect(result.is_tc_candidate).toBe(false);
   });

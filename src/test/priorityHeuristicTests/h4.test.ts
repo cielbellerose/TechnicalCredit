@@ -16,28 +16,28 @@ describe('H4 — class-name suffix matching', () => {
   // --- Positive: suffix match AND a meaningful abstraction ---
 
   test('StripeGateway → TC (Gateway suffix, adapts an external payment provider)', async () => {
-    const result = await analyseConstruct('StripeGateway');
+    const result = await analyseConstruct('StripeGateway', 'reusability');
 
     expect(result.is_tc_candidate).toBe(true);
     expect(H4_CATEGORIES).toContain(result.category);
   });
 
   test('OrderFactory → TC (Factory suffix, centralises Order construction)', async () => {
-    const result = await analyseConstruct('OrderFactory');
+    const result = await analyseConstruct('OrderFactory', 'reusability');
 
     expect(result.is_tc_candidate).toBe(true);
     expect(H4_CATEGORIES).toContain(result.category);
   });
 
   test('PricingStrategy → TC (Strategy suffix, pluggable pricing algorithm)', async () => {
-    const result = await analyseConstruct('PricingStrategy');
+    const result = await analyseConstruct('PricingStrategy', 'reusability');
 
     expect(result.is_tc_candidate).toBe(true);
     expect(H4_CATEGORIES).toContain(result.category);
   });
 
   test('HttpClientBuilder → TC (Builder suffix, fluent immutable construction)', async () => {
-    const result = await analyseConstruct('HttpClientBuilder');
+    const result = await analyseConstruct('HttpClientBuilder', 'reusability');
 
     expect(result.is_tc_candidate).toBe(true);
     expect(H4_CATEGORIES).toContain(result.category);
@@ -46,13 +46,13 @@ describe('H4 — class-name suffix matching', () => {
   // --- Negative: suffix matches but no real abstraction, or no suffix at all ---
 
   test('AccountService → not TC (Service suffix, but a plain data holder — precision guard)', async () => {
-    const result = await analyseConstruct('AccountService');
+    const result = await analyseConstruct('AccountService', 'reusability');
 
     expect(result.is_tc_candidate).toBe(false);
   });
 
   test('StringUtils → not TC (no suffix match; trivial stateless helper)', async () => {
-    const result = await analyseConstruct('StringUtils');
+    const result = await analyseConstruct('StringUtils', 'reusability');
 
     expect(result.is_tc_candidate).toBe(false);
   });
