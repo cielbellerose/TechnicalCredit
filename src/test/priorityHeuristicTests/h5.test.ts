@@ -58,4 +58,16 @@ describe('H5 — Micrometer / structured logging', () => {
 
     expect(result.is_tc_candidate).toBe(false);
   });
+
+  test('MdcDecoder → not TC (MDC is an unrelated acronym; just computes numbers)', async () => {
+    const result = await analyseConstruct('MdcDecoder');
+
+    expect(result.is_tc_candidate).toBe(false);
+  });
+
+  test('ReflectiveLoader → not TC (io.micrometer token only in a string literal/comment)', async () => {
+    const result = await analyseConstruct('ReflectiveLoader');
+
+    expect(result.is_tc_candidate).toBe(false);
+  });
 });

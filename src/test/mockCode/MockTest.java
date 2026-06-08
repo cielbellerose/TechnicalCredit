@@ -209,6 +209,14 @@ class ReflectiveLoader {
     }
 }
 
+// Guards against firing on the "MDC" token alone, regardless of context.
+class MdcDecoder {
+    double decode(double signal, double baseline) {
+        double mdc = (signal - baseline) * 3.3;
+        return mdc < 0 ? 0 : mdc;
+    }
+}
+
 // --- H2 positive cases: class implements an interface from a DIFFERENT package
 // (abstraction / modularity). The signal lives inside the slice: the
 // implemented type is fully-qualified to a package other than the implementing
