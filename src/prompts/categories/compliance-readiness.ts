@@ -1,8 +1,25 @@
-export const prompt = `Look for:
-- Audit or event abstraction (AuditService, AuditEvent, DomainEvent or equivalent) — compliance recording decoupled from business logic.
-- Type names containing Consent, Retention, Gdpr, Regulatory, or Jurisdiction — regulatory concept as a first-class domain type.
-- Cross-cutting interceptor, filter, or aspect applied for compliance concerns (data masking, authorisation, rate limiting).
-- Field or parameter annotations classifying sensitive data (@PersonalData, @Sensitive, @Pii or equivalent) — enables automated compliance scanning.
-- Feature flag or conditional property gating compliance behaviour — jurisdiction-specific rules without code changes.
+import { Signal } from './types';
 
-Not TC: compliance-sounding name with no compliance logic, or a cross-cutting mechanism used purely for performance concerns.`;
+/** Allowlist of signals the compliance-readiness category may assign. */
+export const signals: Signal[] = [
+  {
+    name: 'audit-event-abstraction',
+    when: 'A class or interface named AuditService, AuditEvent, AuditLog, or DomainEvent — compliance recording decoupled from business logic.',
+  },
+  {
+    name: 'compliance-domain-type',
+    when: 'Type names containing Consent, Retention, Gdpr, Regulatory, or Jurisdiction (e.g. ConsentRecord, DataRetentionPolicy) — a regulatory concept modelled as a first-class domain type.',
+  },
+  {
+    name: 'compliance-interceptor',
+    when: 'A cross-cutting interceptor, filter, or aspect applied for a compliance concern such as data masking, authorisation, or rate limiting (e.g. implements Filter or HandlerInterceptor, or uses @Aspect).',
+  },
+  {
+    name: 'sensitive-data-annotation',
+    when: 'Field or parameter annotations classifying sensitive data (e.g. @PersonalData, @Sensitive, @Pii) — enables automated compliance scanning and masking.',
+  },
+  {
+    name: 'compliance-feature-toggle',
+    when: 'A configuration-driven feature toggle gating compliance behaviour (e.g. @ConditionalOnProperty, a FeatureFlag, or a property-injected switch) — jurisdiction-specific rules without code changes.',
+  },
+];

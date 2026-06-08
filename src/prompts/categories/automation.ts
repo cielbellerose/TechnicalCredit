@@ -1,8 +1,25 @@
-export const prompt = `Look for:
-- Code generation annotations that eliminate manually maintained boilerplate (@Builder, @Data, @Mapper, @Generated or equivalents).
-- Custom annotation processor or compile-time code generator.
-- Parametrised or data-driven tests — broad scenario coverage without duplication.
-- Factory or Builder whose product depends on runtime configuration — config-driven object creation.
-- Plugin discovery mechanism that avoids hardcoded registration (ServiceLoader or equivalent).
+import { Signal } from './types';
 
-Not TC: code generation used purely for convenience with no architectural intent, or a factory that just wraps a constructor.`;
+/** Allowlist of signals the automation category may assign. */
+export const signals: Signal[] = [
+  {
+    name: 'code-generation-annotations',
+    when: 'Code-generation annotations that eliminate manually maintained boilerplate are present (e.g. Lombok @Builder/@Data/@Value, MapStruct @Mapper, @Generated).',
+  },
+  {
+    name: 'annotation-processor',
+    when: 'The class implements an annotation processor or extends a base processor (e.g. javax.annotation.processing.Processor, AbstractProcessor) — a custom validator, code generator, or documentation extractor.',
+  },
+  {
+    name: 'parametrised-tests',
+    when: 'Data-driven or parametrised tests (e.g. @ParameterizedTest with @CsvSource or @MethodSource) — broad scenario coverage without duplicated test code.',
+  },
+  {
+    name: 'config-driven-factory',
+    when: 'A Factory or Builder whose product depends on runtime configuration or environment (e.g. DataSourceFactory, HandlerFactory, PluginRegistry).',
+  },
+  {
+    name: 'service-loader',
+    when: 'Plugin discovery via a service-loading mechanism (e.g. ServiceLoader.load(SomeInterface.class)) — third-party extension without hardcoded registration.',
+  },
+];
