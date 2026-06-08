@@ -4,7 +4,7 @@ import type { AdrSummary } from '@/context/findAdrs';
 export function createUserPrompt(context: TcContext, adrs: AdrSummary[] = []) {
   const adrSection =
     adrs.length > 0
-      ? `ADRs in this repository:\n${adrs.map((a) => `${a.id}: ${a.title} — ${a.summary}`).join('\n')}`
+      ? `ADRs in this repository:\n${adrs.map((a) => [a.id, a.title, a.tcContext].filter(Boolean).join(' — ')).join('\n')}`
       : null;
 
   return [
