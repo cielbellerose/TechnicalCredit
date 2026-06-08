@@ -1,6 +1,4 @@
-export const prompt = `You are detecting OBSERVABILITY Technical Credit.
-
-Look for:
+export const prompt = `Look for:
 - Metrics instrumentation — counters, timers, gauges registered via a metrics library, or metric annotations.
 - Structured logging using key=value pairs or a diagnostic context rather than string concatenation — machine-parseable log output.
 - Distributed tracing instrumentation — span creation, trace propagation, or tracing library imports.

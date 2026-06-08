@@ -31,6 +31,13 @@ const heuristicPrompts: Record<HeuristicCategory, string> = {
   'compliance-readiness': complianceReadiness,
 };
 
-export function createHeuristicPrompt(heuristic: HeuristicCategory): string {
+/** Returns the raw detection criteria for a heuristic (no category header). Used by OPRO to optimize criteria in isolation. */
+export function getHeuristicCriteria(heuristic: HeuristicCategory): string {
   return heuristicPrompts[heuristic];
+}
+
+/** Returns the full heuristic prompt including a category header. Use this everywhere outside OPRO. */
+export function createHeuristicPrompt(heuristic: HeuristicCategory): string {
+  const label = heuristic.toUpperCase().replace(/-/g, ' ');
+  return `Detecting: ${label} Technical Credit.\n\n${heuristicPrompts[heuristic]}`;
 }
