@@ -12,8 +12,7 @@ import { loadMock, extractType } from './support/mockSource';
  * Today this guards the fixtures (the construct exists, both polarities are
  * present). Once detection is wired, swap the TODO for a call that sends the
  * extracted code to Claude and assert `toMatchObject(c.expected)` — grow
- * `expected` into the full JSON contract (category, confidence, …), pinning
- * only the deterministic fields.
+ * `expected` into the full JSON contract (category, confidence, …).
  */
 
 // reads MockTest.java for testing
