@@ -123,3 +123,88 @@ class ReflectiveLoader {
         return Class.forName(className);
     }
 }
+
+// --- H3 positive cases: constructor injection (abstraction/configurability) ---
+// Final fields set only in the constructor, or @Autowired on the constructor
+// (not on fields). The dependency is supplied from outside, so the
+// implementation can be substituted — the design anticipated change.
+
+// Plain Java constructor injection: the single dependency is a final field
+// assigned only in the constructor. No framework needed for the signal.
+class OrderService {
+    private final PaymentGateway gateway;
+
+    OrderService(PaymentGateway gateway) {
+        this.gateway = gateway;
+    }
+
+    boolean checkout(long amountCents) {
+        return gateway.charge(amountCents);
+    }
+}
+
+// Spring constructor injection: @Autowired sits on the constructor (not the
+// fields), and every collaborator is a final field.
+class NotificationService {
+    private final EmailClient email;
+    private final SmsClient sms;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    NotificationService(EmailClient email, SmsClient sms) {
+        this.email = email;
+        this.sms = sms;
+    }
+
+    void notifyUser(String userId, String message) {
+        email.send(userId, message);
+        sms.send(userId, message);
+    }
+}
+
+// Plain Java constructor injection with multiple final collaborators, all set
+// only in the constructor — clear substitution seam for testing/extension.
+class ReportBuilder {
+    private final DataSource source;
+    private final Formatter formatter;
+
+    ReportBuilder(DataSource source, Formatter formatter) {
+        this.source = source;
+        this.formatter = formatter;
+    }
+
+    String build() {
+        return formatter.format(source.read());
+    }
+}
+
+// --- H3 negative cases: field / setter injection (no constructor seam) ---
+
+// Field-level injection: @Autowired on the fields themselves, which are
+// mutable (non-final). There is no constructor seam — H3 requires constructor
+// injection, so this must not count.
+class UserController {
+    @org.springframework.beans.factory.annotation.Autowired
+    private UserRepository repository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private AuditLogger audit;
+
+    String find(String id) {
+        return repository.findName(id);
+    }
+}
+
+// Setter injection: the dependency arrives through a setter after construction,
+// so the field cannot be final and the object is mutable. Not the constructor
+// injection pattern H3 looks for.
+class EmailService {
+    private SmtpClient client;
+
+    public void setClient(SmtpClient client) {
+        this.client = client;
+    }
+
+    void send(String to, String body) {
+        client.deliver(to, body);
+    }
+}
