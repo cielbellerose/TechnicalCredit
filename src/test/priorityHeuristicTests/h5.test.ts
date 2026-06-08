@@ -54,7 +54,22 @@ describe('H5 — Micrometer / structured logging', () => {
   // --- Negative: near-miss signals (the precision guards) ---
 
   test('UnstructuredLogger → not TC (real SLF4J logger, but string concat)', async () => {
-    const result = await analyseConstruct('UnstructuredLogger', 'observability');
+    const result = await analyseConstruct(
+      'UnstructuredLogger',
+      'observability',
+    );
+
+    expect(result.is_tc_candidate).toBe(false);
+  });
+
+  test('MdcDecoder → not TC (MDC is an unrelated acronym; just computes numbers)', async () => {
+    const result = await analyseConstruct('MdcDecoder', 'observability');
+
+    expect(result.is_tc_candidate).toBe(false);
+  });
+
+  test('ReflectiveLoader → not TC (io.micrometer token only in a string literal/comment)', async () => {
+    const result = await analyseConstruct('ReflectiveLoader', 'observability');
 
     expect(result.is_tc_candidate).toBe(false);
   });

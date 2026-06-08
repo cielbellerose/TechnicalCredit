@@ -52,7 +52,10 @@ describe('H2 — class implementing interface from a different package', () => {
   });
 
   test('StrictLocalValidator → not TC (implements same-package LocalValidator — contract and impl live together)', async () => {
-    const result = await analyseConstruct('StrictLocalValidator', 'abstraction');
+    const result = await analyseConstruct(
+      'StrictLocalValidator',
+      'abstraction',
+    );
 
     expect(result.is_tc_candidate).toBe(false);
   });
