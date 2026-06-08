@@ -1,13 +1,4 @@
-/** The structured Technical Credit analysis returned by the model. */
-export interface TCResult {
-  is_tc_candidate: boolean;
-  confidence: number;
-  category: string;
-  benefit: string;
-  conditions: string;
-  signals: string[];
-  not_tc_reason: string | null;
-}
+import { TCResult } from './tcResult';
 
 /** Wraps a value in single quotes, escaping any single quotes it contains. */
 function quote(value: string): string {
@@ -24,7 +15,6 @@ export function formatTCComment(result: TCResult, indent: string): string {
     `category: ${quote(result.category)},`,
     `conditions: ${quote(result.conditions)},`,
     `signals: [${result.signals.map(quote).join(', ')}],`,
-    `confidence: ${result.confidence},`,
     // Placeholder until ADR linking is implemented.
     `adr: 'ADR-000',`,
   ];

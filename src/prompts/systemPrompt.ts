@@ -10,7 +10,6 @@ When TC is detected, populate these fields:
 | TC category | category | Enum | The category you are detecting |
 | Realisation conditions | conditions | Free text | Circumstances under which the benefit materialises |
 | Observable signals | signals | Tag list | Evidence that TC is being realised or eroding |
-| Confidence level | confidence | 1-5 ordinal | 1 = speculative, 3 = moderate, 5 = evidenced |
 | ADR reference | adr | ADR-n | Links to the ADR decision that created this TC (optional) |
 
 ## Response Format
