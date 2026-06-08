@@ -1,19 +1,17 @@
 # TechnicalCredit
 
-A VS Code extension that analyses Java code for **Technical Credit** — the positive
-counterpart to technical debt. Where technical *debt* flags shortcuts that cost you
-later, technical *credit* identifies strategic design decisions (abstractions,
+A VS Code extension that analyses Java code for **Technical Credit** - the positive
+counterpart to technical debt. Where technical _debt_ flags shortcuts that cost you
+later, technical _credit_ identifies strategic design decisions (abstractions,
 modular boundaries, instrumentation, documentation, etc.) that create long-term
 value for a system's evolution.
 
 Select a Java construct (class, interface, method, or field) and run **Analyse for
 TC**. The extension uses Claude to evaluate the selected code against each Technical
-Credit category. If — and only if — the code actually exhibits Technical Credit, it
-suggests a `@TechnicalCredit` annotation describing the benefit, the conditions under
-which it holds, and the signals that justify it. Selecting a construct does not guarantee any
-annotation: code with no detectable Technical Credit yields no suggestions. When
-suggestions are produced, you preview each one inline and **Accept** or **Dismiss** it
-with a single click.
+Credit category. If the code exhibits Technical Credit, it suggests a `@TechnicalCredit` annotation
+describing the benefit, the conditions under which it holds, and the signals that justify it.
+No detectable Technical Credit yields no suggestions. When suggestions are produced, you preview
+each one inline and are able to **Accept** or **Dismiss** them individually.
 
 ## Links
 
@@ -27,8 +25,8 @@ with a single click.
    extracts structural metrics (fields, methods, imports, nested types).
 2. **Multi-heuristic analysis** — Eight specialised Claude agents run **in parallel**,
    one per Technical Credit category:
-   *abstraction, modularity, API stability, automation, compliance readiness,
-   configurability, observability,* and *reusability.*
+   _abstraction, modularity, API stability, automation, compliance readiness,
+   configurability, observability,_ and _reusability._
    Each agent shares a common system prompt defining the TC schema but applies its
    own category-specific detection rules.
 3. **ADR matching** — If the workspace contains Architecture Decision Records
@@ -36,7 +34,7 @@ with a single click.
    in a follow-up Claude call. A clear match links the annotation to that ADR's id
    (e.g. `ADR-0007`); otherwise no `adr` field is emitted.
 4. **Preview & decide** — Only categories that actually detect Technical Credit
-   produce a candidate; so a construct may yield several annotations, one, or none at all. 
+   produce a candidate; so a construct may yield several annotations, one, or none at all.
    Any candidates are inserted as dimmed previews with **Accept** / **Dismiss** CodeLenses above.
    Accepting keeps the annotation; dismissing removes it.
 
@@ -64,19 +62,20 @@ echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
 # 4. Build the extension
 npm run compile
 ```
+
 ### Available scripts
 
-| Script | Description |
-| --- | --- |
-| `npm run compile` | Type-check, lint, and bundle with esbuild |
-| `npm run watch` | Watch mode — runs `tsc` and esbuild in parallel |
-| `npm run package` | Production build (minified, no sourcemaps) |
-| `npm test` | Run the Jest test suite |
-| `npm run lint:check` | Lint with zero-warning enforcement |
-| `npm run lint:fix` | Auto-fix lint issues |
-| `npm run tsc:check` | Type-check only |
-| `npm run format` | Format the codebase with Prettier |
-| `npm run opro` | Run the OPRO script to optimize heuristic detection criteria |
+| Script               | Description                                                  |
+| -------------------- | ------------------------------------------------------------ |
+| `npm run compile`    | Type-check, lint, and bundle with esbuild                    |
+| `npm run watch`      | Watch mode — runs `tsc` and esbuild in parallel              |
+| `npm run package`    | Production build (minified, no sourcemaps)                   |
+| `npm test`           | Run the Jest test suite                                      |
+| `npm run lint:check` | Lint with zero-warning enforcement                           |
+| `npm run lint:fix`   | Auto-fix lint issues                                         |
+| `npm run tsc:check`  | Type-check only                                              |
+| `npm run format`     | Format the codebase with Prettier                            |
+| `npm run opro`       | Run the OPRO script to optimize heuristic detection criteria |
 
 ## Running the Extension
 
@@ -103,11 +102,19 @@ the source under `src/test/`. Test files match `src/**/*.test.ts`.
 npm test
 ```
 
-Current tests cover context-building utilities and load Java fixtures
-(`src/test/mockCode/MockTest.java`) to exercise individual heuristics. They verify
-that the expected constructs are extracted from the AST; wiring the fixtures up to
-live Claude calls and asserting on the JSON output is still in progress (see
-**Known Issues**).
+The suite has two layers:
+
+- **Context unit tests** (`buildContextCore.test.ts`) — verify the pure, vscode-free
+  context assembly (e.g. package/import extraction) against the
+  `src/test/mockCode/MockTest.java` fixture. These run offline.
+- **Live heuristic tests** (`priorityHeuristicTests/h1, h2, h4, h5`) — send fixture
+  constructs through the full production path (`buildContextFromSource` →
+  `createUserPrompt` → `callClaude`) via the `support/analyseLive.ts` helper, then
+  assert on the parsed `TCResult` JSON (positive and negative cases per heuristic).
+  These make real Claude API calls, so they **require `ANTHROPIC_API_KEY`** and use a
+  60s per-test timeout.
+
+Remaining heuristics do not yet have dedicated live fixture coverage.
 
 ## Project Structure
 
