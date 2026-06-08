@@ -23,5 +23,5 @@ export interface TCResult {
   conditions: string;
   signals: string[];
   not_tc_reason: string | null;
-  adr: string | null;
+  adr?: string | null;
 }

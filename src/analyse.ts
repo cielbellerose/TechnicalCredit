@@ -8,6 +8,7 @@ import { formatTCComment } from '@/comment/formatComment';
 import { TCResult } from '@/comment/tcResult';
 import { PendingAnnotation } from '@/comment/pendingAnnotation';
 import { createUserPrompt } from '@/prompts/userPrompts';
+import { ADR_SYSTEM_PROMPT, createAdrUserPrompt } from '@/prompts/adrPrompt';
 import {
   createHeuristicPrompt,
   HEURISTIC_CATEGORIES,
@@ -34,7 +35,7 @@ export async function analyseForTC(controller: PendingAnnotation) {
   const workspaceRoot =
     vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? '';
   const adrs = workspaceRoot ? findAdrs(workspaceRoot) : [];
-  const userPrompt = createUserPrompt(context, adrs);
+  const userPrompt = createUserPrompt(context);
 
   await vscode.window.withProgress(
     {
@@ -61,6 +62,18 @@ export async function analyseForTC(controller: PendingAnnotation) {
         const candidates = results.filter((r) => r.is_tc_candidate);
 
         if (candidates.length > 0) {
+          if (adrs.length > 0) {
+            await Promise.all(
+              candidates.map(async (r) => {
+                const match = await callClaude<{ adr: string | null }>(
+                  ADR_SYSTEM_PROMPT,
+                  createAdrUserPrompt(r, adrs),
+                );
+                r.adr = match.adr;
+              }),
+            );
+          }
+
           const comments = candidates.map((r) =>
             formatTCComment(r, context.insertIndent),
           );
