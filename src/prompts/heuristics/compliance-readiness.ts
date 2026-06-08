@@ -1,6 +1,4 @@
-export const prompt = `You are detecting COMPLIANCE READINESS Technical Credit.
-
-Look for:
+export const prompt = `Look for:
 - Audit or event abstraction (AuditService, AuditEvent, DomainEvent or equivalent) — compliance recording decoupled from business logic.
 - Type names containing Consent, Retention, Gdpr, Regulatory, or Jurisdiction — regulatory concept as a first-class domain type.
 - Cross-cutting interceptor, filter, or aspect applied for compliance concerns (data masking, authorisation, rate limiting).

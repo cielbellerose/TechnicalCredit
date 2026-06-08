@@ -10,8 +10,6 @@ When TC is detected, populate these fields:
 | TC category | category | Enum | The category you are detecting |
 | Realisation conditions | conditions | Free text | Circumstances under which the benefit materialises |
 | Observable signals | signals | Tag list | Evidence that TC is being realised or eroding |
-| Confidence level | confidence | 1-5 ordinal | 1 = speculative, 3 = moderate, 5 = evidenced |
-| ADR reference | adr | ADR-n | Links to the ADR decision that created this TC (optional) |
 
 ## Response Format
 
@@ -19,7 +17,7 @@ Return JSON with this exact structure:
 {
   "is_tc_candidate": boolean,
   "confidence": 1-5,
-  "category": "abstraction"|"modularity"|"api-stability"|"automation"|"compliance-readiness"|"configurability"|"observability"|"reusability"|"knowledge-preservation",
+  "category": "abstraction"|"modularity"|"api-stability"|"automation"|"compliance-readiness"|"configurability"|"observability"|"reusability",
   "benefit": "one sentence describing the long-term value",
   "conditions": "when this benefit will materialise",
   "signals": ["tag1", "tag2"],

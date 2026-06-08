@@ -1,6 +1,4 @@
-export const prompt = `You are detecting ABSTRACTION Technical Credit.
-
-Look for:
+export const prompt = `Look for:
 - Interface or abstract type with no fields and no concrete methods — strong TC if a separate implementation exists in a different package or module.
 - Class name ending in Adapter, Wrapper, Bridge, Gateway, or Port — intentional indirection over a third-party or legacy type.
 - Constructor assigning all dependencies to final fields, or dependency injection on the constructor not on fields — design anticipated swapping implementations.

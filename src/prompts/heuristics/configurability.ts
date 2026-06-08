@@ -1,6 +1,4 @@
-export const prompt = `You are detecting CONFIGURABILITY Technical Credit.
-
-Look for:
+export const prompt = `Look for:
 - Constructor or setter accepting a configuration object, map, or environment — behaviour driven by external config rather than hardcoded values.
 - Conditional bean or component activation based on configuration properties — environment-specific behaviour without code changes.
 - Strategy interface with implementation selected by a property at startup — runtime-switchable behaviour.
