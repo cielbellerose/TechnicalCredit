@@ -143,18 +143,6 @@ src/
 
 ## Next Steps
 
-- **Java only.** Analysis depends on the Tree-sitter Java grammar; other languages are
-  not yet supported.
-- **ADR matching requires a `docs/` folder.** ADRs are discovered only from markdown
-  files under `docs/` in the first workspace folder; annotations link to an ADR only
-  when one is present and clearly matches.
-- **Requires network access and a valid API key.** Each analysis makes eight live
-  Claude API calls (one per heuristic, 30s timeout each), plus one additional call
-  per detected candidate when ADRs are present. Analysis fails without
-  `ANTHROPIC_API_KEY` set.
-
-## Next Steps
-
 ### Current Limitations
 
 - **Java only.** Analysis depends on the Tree-sitter Java grammar; other languages are
