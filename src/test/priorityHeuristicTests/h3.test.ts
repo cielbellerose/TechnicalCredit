@@ -16,21 +16,21 @@ const H3_CATEGORIES = ['abstraction', 'configurability'];
 describe('H3 — constructor injection pattern', () => {
   // --- Positive: constructor injection with all-final fields ---
 
-  test('OrderService → abstraction (plain Java constructor injection, single final field)', async () => {
+  test('OrderService → TC (plain Java constructor injection, single final field)', async () => {
     const result = await analyseConstruct('OrderService', 'abstraction');
 
     expect(result.is_tc_candidate).toBe(true);
     expect(H3_CATEGORIES).toContain(result.category);
   });
 
-  test('NotificationService → abstraction (@Autowired on constructor, all collaborators final)', async () => {
+  test('NotificationService → TC (@Autowired on constructor, all collaborators final)', async () => {
     const result = await analyseConstruct('NotificationService', 'abstraction');
 
     expect(result.is_tc_candidate).toBe(true);
     expect(H3_CATEGORIES).toContain(result.category);
   });
 
-  test('ReportBuilder → abstraction (multiple final collaborators set only in constructor)', async () => {
+  test('ReportBuilder → TC (multiple final collaborators set only in constructor)', async () => {
     const result = await analyseConstruct('ReportBuilder', 'abstraction');
 
     expect(result.is_tc_candidate).toBe(true);
