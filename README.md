@@ -169,7 +169,7 @@ src/
 - **No caching or deduplication.** The same construct analyzed twice fires the full
   set of API calls again and may insert a second annotation. Responses should be
   cached by file hash and analyzed constructs tracked to prevent re-insertion.
-- **Only 5 of 9 heuristics implemented (H1–H5).** Automation, Compliance-Readiness, Kmnowledge Preservation
+- **Only 5 of 9 heuristics implemented (H1–H5).** Automation, Compliance-Readiness, Knowledge Preservation
   and Configurability patterns are not yet detected (in progress).
 
 ### Future Ideas
