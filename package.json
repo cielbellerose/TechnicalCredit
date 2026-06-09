@@ -16,14 +16,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "myExtension.askClaude",
-        "title": "Ask Claude: What's up?"
-      },
-      {
-        "command": "technicalcredit.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "technicalcredit.analyseForTC",
         "title": "Analyse for TC"
       },
