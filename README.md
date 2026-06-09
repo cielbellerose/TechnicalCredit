@@ -146,14 +146,14 @@ src/
 ### Current Limitations
 
 - **Java only.** Analysis depends on the Tree-sitter Java grammar; other languages are
-  not yet supported. 
+  not yet supported.
 - **ADR matching requires a `docs/` folder.** ADRs are discovered only from markdown
   files under `docs/` in the first workspace folder; annotations link to an ADR only
-  when one is present and clearly matches. 
+  when one is present and clearly matches.
 - **Requires network access and a valid API key.** Each analysis makes eight live
   Claude API calls (one per heuristic, 30s timeout each), plus one additional call
   per detected candidate when ADRs are present. Analysis fails without
-  `ANTHROPIC_API_KEY` set. 
+  `ANTHROPIC_API_KEY` set.
 - **No caching or deduplication.** The same construct analyzed twice fires the full
   set of API calls again and may insert a second annotation. Responses should be
   cached by file hash and analyzed constructs tracked to prevent re-insertion.
@@ -165,7 +165,7 @@ src/
 - **Multi-language support.** Extend Tree-sitter parsing to other languages using the same heuristic logic.
 - **Whole-codebase analysis.** Add a batch crawl layer to walk an entire repository
   and produce a project-wide TC inventory, rather than one construct at a time.
-- **Heuristic pre-filtering.** Run lightweight heuristics before firing API calls. 
+- **Heuristic pre-filtering.** Run lightweight heuristics before firing API calls.
   Only call Claude for categories where a signal is already detected to reduce cost
   and latency significantly.
 - **Engineer feedback loop.** Every Accept/Dismiss on a suggested annotation is a
