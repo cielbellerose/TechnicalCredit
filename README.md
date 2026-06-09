@@ -152,3 +152,35 @@ src/
   Claude API calls (one per heuristic, 30s timeout each), plus one additional call
   per detected candidate when ADRs are present. Analysis fails without
   `ANTHROPIC_API_KEY` set.
+
+## Next Steps
+
+### Current Limitations
+
+- **Java only.** Analysis depends on the Tree-sitter Java grammar; other languages are
+  not yet supported. 
+- **ADR matching requires a `docs/` folder.** ADRs are discovered only from markdown
+  files under `docs/` in the first workspace folder; annotations link to an ADR only
+  when one is present and clearly matches. 
+- **Requires network access and a valid API key.** Each analysis makes eight live
+  Claude API calls (one per heuristic, 30s timeout each), plus one additional call
+  per detected candidate when ADRs are present. Analysis fails without
+  `ANTHROPIC_API_KEY` set. 
+- **No caching or deduplication.** The same construct analyzed twice fires the full
+  set of API calls again and may insert a second annotation. Responses should be
+  cached by file hash and analyzed constructs tracked to prevent re-insertion.
+- **Only 5 of 9 heuristics implemented (H1–H5).** Automation, Compliance-Readiness, Kmnowledge Preservation
+  and Configurability patterns are not yet detected (in progress).
+
+### Future Ideas
+
+- **Multi-language support.** Extend Tree-sitter parsing to other languages using the same heuristic logic.
+- **Whole-codebase analysis.** Add a batch crawl layer to walk an entire repository
+  and produce a project-wide TC inventory, rather than one construct at a time.
+- **Heuristic pre-filtering.** Run lightweight heuristics before firing API calls. 
+  Only call Claude for categories where a signal is already detected to reduce cost
+  and latency significantly.
+- **Engineer feedback loop.** Every Accept/Dismiss on a suggested annotation is a
+  free human label. Capturing these would build a real prompt tuning dataset.
+- **Cost controls.** Let users select which heuristics to run and set a per-session
+  API call budget to prevent runaway costs on large files.
