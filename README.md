@@ -13,9 +13,70 @@ describing the benefit, the conditions under which it holds, and the signals tha
 No detectable Technical Credit yields no suggestions. When suggestions are produced, you preview
 each one inline and are able to **Accept** or **Dismiss** them individually.
 
+## Project Context
+
+This is the **TC Annotation Project** for Advanced Software Development, by Dharna,
+Kinsey, Benedikt, and Rowan. The extension is written in **TypeScript** and analyses
+**Java** source code.
+
+### Motivation — why we are doing this
+
+The software development community has long focused on **Technical _Debt_** but rarely
+on **Technical _Credit_**: the good design decisions that quietly create long-term value
+yet remain effectively invisible. These choices are seldom tracked, acknowledged, or
+annotated, so the strategic thinking behind them goes unrecognised. We want to change
+that by building an annotation tool that calls an AI API to detect Technical Credit and
+mark up code blocks with the evidence supporting it. The goal is to make good design
+**visible to engineers in the moment they are actually working in the code**.
+
+### Starting Point — what we are building from
+
+We began with the small body of existing work on Technical Credit, primarily by Ian
+Gorton:
+
+- ["Technical Credit"](https://cacm.acm.org/opinion/technical-credit/) (CACM)
+- ["A Research Agenda for Technical Credit"](https://medium.com/@i.gorton/a-research-agenda-for-technical-credit-giving-software-quality-a-language-e9ad62a0cbf9)
+- [Giving Software Quality a Language](https://dl.acm.org/doi/epdf/10.1145/3690043) (ACM)
+
+Additional references inform specific parts of the work:
+
+- [OPRO: Large Language Models as Optimizers](https://arxiv.org/pdf/2309.03409) — basis
+  for Dharna's prompt-optimization work.
+- [A bot for recognising Technical Debt](https://arxiv.org/abs/2605.29869) — provided by
+  Ian as prior art on automated detection.
+
+From there we built on a blank
+[VS Code extension](https://code.visualstudio.com/api/references/vscode-api#languages),
+the [Anthropic Claude API](https://www.anthropic.com/api), and the project reference
+sheet defining eight Technical Credit detection categories along with their signals,
+pattern-detection tables, and example annotations:
+
+| Categories                                                                                                                   |
+| ---------------------------------------------------------------------------------------------------------------------------- |
+| Abstraction · Modularity · API-Stability · Automation · Compliance-Readiness · Observability · Configurability · Reusability |
+
+### Aims & Research Questions
+
+Our aims for the project are:
+
+- **Detect Technical Credit in Java files** — right-click a chunk of code, choose
+  **Analyse for TC**, and classify whether a TC pattern is present by sending the
+  construct to the AI API.
+- **Turn detections into actionable annotations** — take the AI's detections and
+  surface them as annotations the engineer can **Accept** or **Dismiss**, pre-filled
+  with the category, benefit, conditions, signals, confidence score, and (if reached)
+  an ADR link.
+- **Trace decisions back to ADRs** — work with the partner group to link each
+  annotation to the Architecture Decision Record that motivated the design decision,
+  creating a traceable chain from **design decision → ADR → annotated code chunk**.
+
+**Core research question:** _Can a VS Code extension combining prompt engineering,
+structural heuristics, and the Anthropic API reliably detect and annotate Technical
+Credit in Java source code?_
+
 ## Links
 
-- 📄 **Documentation (Overleaf):** https://www.overleaf.com/project/6a20d30ab0e8e4cadb31ab99
+- 📄 **Documentation (Overleaf):** https://www.overleaf.com/read/gwfmbbtnpgnt#db500d
 - 🖥️ **Presentation / Demo (Google Slides):** https://docs.google.com/presentation/d/1WZ43UPL2MukiH-vXycmLBrYOlTSiQpsbuTnpMLBEbaI/edit?slide=id.g3e88f8db96b_0_5#slide=id.g3e88f8db96b_0_5
 
 ## How It Works
@@ -143,6 +204,8 @@ src/
 
 ## Next Steps
 
+### Current Limitations
+
 - **Java only.** Analysis depends on the Tree-sitter Java grammar; other languages are
   not yet supported.
 - **ADR matching requires a `docs/` folder.** ADRs are discovered only from markdown
@@ -152,3 +215,21 @@ src/
   Claude API calls (one per heuristic, 30s timeout each), plus one additional call
   per detected candidate when ADRs are present. Analysis fails without
   `ANTHROPIC_API_KEY` set.
+- **No caching or deduplication.** The same construct analyzed twice fires the full
+  set of API calls again and may insert a second annotation. Responses should be
+  cached by file hash and analyzed constructs tracked to prevent re-insertion.
+- **Only 5 of 9 heuristics implemented (H1–H5).** Automation, Compliance-Readiness, Knowledge Preservation
+  and Configurability patterns are not yet detected (in progress).
+
+### Future Ideas
+
+- **Multi-language support.** Extend Tree-sitter parsing to other languages using the same heuristic logic.
+- **Whole-codebase analysis.** Add a batch crawl layer to walk an entire repository
+  and produce a project-wide TC inventory, rather than one construct at a time.
+- **Heuristic pre-filtering.** Run lightweight heuristics before firing API calls.
+  Only call Claude for categories where a signal is already detected to reduce cost
+  and latency significantly.
+- **Engineer feedback loop.** Every Accept/Dismiss on a suggested annotation is a
+  free human label. Capturing these would build a real prompt tuning dataset.
+- **Cost controls.** Let users select which heuristics to run and set a per-session
+  API call budget to prevent runaway costs on large files.
