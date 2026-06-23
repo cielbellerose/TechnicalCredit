@@ -51,8 +51,8 @@ the [Anthropic Claude API](https://www.anthropic.com/api), and the project refer
 sheet defining eight Technical Credit detection categories along with their signals,
 pattern-detection tables, and example annotations:
 
-| Categories |
-| ---------- |
+| Categories                                                                                                                   |
+| ---------------------------------------------------------------------------------------------------------------------------- |
 | Abstraction · Modularity · API-Stability · Automation · Compliance-Readiness · Observability · Configurability · Reusability |
 
 ### Aims & Research Questions
@@ -76,7 +76,7 @@ Credit in Java source code?_
 
 ## Links
 
-- 📄 **Documentation (Overleaf):** https://www.overleaf.com/read/gwfmbbtnpgnt#db500d 
+- 📄 **Documentation (Overleaf):** https://www.overleaf.com/read/gwfmbbtnpgnt#db500d
 - 🖥️ **Presentation / Demo (Google Slides):** https://docs.google.com/presentation/d/1WZ43UPL2MukiH-vXycmLBrYOlTSiQpsbuTnpMLBEbaI/edit?slide=id.g3e88f8db96b_0_5#slide=id.g3e88f8db96b_0_5
 
 ## How It Works
