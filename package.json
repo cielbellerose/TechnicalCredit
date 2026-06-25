@@ -103,7 +103,7 @@
     "typescript-eslint": "^8.60.1"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.100.1",
+    "@anthropic-ai/sdk": "^0.106.0",
     "anthropic-ai": "^0.0.10",
     "dotenv": "^17.4.2",
     "tree-sitter-java": "^0.23.5",
