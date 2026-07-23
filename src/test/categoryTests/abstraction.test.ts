@@ -21,7 +21,11 @@ const MOCK_FILE = 'MockCalculator.java';
 describe('Abstraction: interface + implementation separation', () => {
   // --- Positive: no-field interface implemented by a concrete class ---
   test('Operation → abstraction (single-method interface, no fields)', async () => {
-    const result = await analyseConstruct('Operation', 'abstraction', MOCK_FILE);
+    const result = await analyseConstruct(
+      'Operation',
+      'abstraction',
+      MOCK_FILE,
+    );
 
     expect(result.is_tc_candidate).toBe(true);
     expect(result.category).toBe('abstraction');
@@ -82,7 +86,11 @@ describe('Abstraction: adapter/wrapper', () => {
 
   // --- Negative: suffix matches, but nothing third-party is actually wrapped ---
   test('ResultWrapper → not TC (Wrapper suffix, but a plain data holder)', async () => {
-    const result = await analyseConstruct('ResultWrapper', 'abstraction', MOCK_FILE);
+    const result = await analyseConstruct(
+      'ResultWrapper',
+      'abstraction',
+      MOCK_FILE,
+    );
 
     expect(result.is_tc_candidate).toBe(false);
   });
@@ -128,13 +136,21 @@ describe('Abstraction: facade', () => {
 
   // --- Negative: Facade/Service suffix, but no subsystem to simplify ---
   test('SessionFacade → not TC (Facade suffix, but a plain data holder)', async () => {
-    const result = await analyseConstruct('SessionFacade', 'abstraction', MOCK_FILE);
+    const result = await analyseConstruct(
+      'SessionFacade',
+      'abstraction',
+      MOCK_FILE,
+    );
 
     expect(result.is_tc_candidate).toBe(false);
   });
 
   test('DisplayService → not TC (Service suffix, single-collaborator pass-through, no subsystem)', async () => {
-    const result = await analyseConstruct('DisplayService', 'abstraction', MOCK_FILE);
+    const result = await analyseConstruct(
+      'DisplayService',
+      'abstraction',
+      MOCK_FILE,
+    );
 
     expect(result.is_tc_candidate).toBe(false);
   });
@@ -143,7 +159,11 @@ describe('Abstraction: facade', () => {
 describe('Abstraction: template method', () => {
   // --- Positive: abstract class defines the algorithm skeleton; subclasses fill in the steps ---
   test('Calculation → TC (abstract class defines the skeleton; abstract steps filled in by subclasses)', async () => {
-    const result = await analyseConstruct('Calculation', 'abstraction', MOCK_FILE);
+    const result = await analyseConstruct(
+      'Calculation',
+      'abstraction',
+      MOCK_FILE,
+    );
 
     expect(result.is_tc_candidate).toBe(true);
     expect(result.category).toBe('abstraction');
