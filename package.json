@@ -92,7 +92,7 @@
     "@types/emscripten": "^1.41.5",
     "@types/jest": "^30.0.0",
     "@types/node": "26.x",
-    "@types/vscode": "^1.120.0",
+    "@types/vscode": "^1.125.0",
     "esbuild": "^0.28.0",
     "eslint": "^10.7.0",
     "jest": "^30.4.2",
