@@ -13,6 +13,7 @@ jest.setTimeout(60_000);
 describe('H1 — interface with no fields', () => {
   // --- Positive: interfaces with no fields ---
 
+  // duplicated in abstraction.test.ts
   test('EventListener → abstraction (single-method interface, no fields)', async () => {
     const result = await analyseConstruct('EventListener', 'abstraction');
 

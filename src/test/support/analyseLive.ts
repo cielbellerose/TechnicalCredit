@@ -12,41 +12,54 @@ import { TCResult } from '../../comment/tcResult';
 
 setExtensionPath(path.join(__dirname, '../../../'));
 
-const MOCK_SOURCE = fs.readFileSync(
-  path.join(__dirname, '../mockCode/MockTest.java'),
-  'utf-8',
-);
-const MOCK_LINES = MOCK_SOURCE.split('\n');
+const mockSourceCache = new Map<string, string>();
+
+function readMockSource(sourceFile: string): string {
+  let source = mockSourceCache.get(sourceFile);
+  if (source === undefined) {
+    source = fs.readFileSync(
+      path.join(__dirname, '../mockCode', sourceFile),
+      'utf-8',
+    );
+    mockSourceCache.set(sourceFile, source);
+  }
+  return source;
+}
 
 /**
- * Sends the MockTest.java construct named `name` to Claude using the full
- * production context path (buildContextFromSource → createUserPrompt) and the
+ * Sends the construct named `name` to Claude using the full production
+ * context path (buildContextFromSource → createUserPrompt) and the
  * heuristic-specific system prompt, then returns the parsed TCResult.
  *
  * Requires ANTHROPIC_API_KEY in the environment.
  *
- * @param name - Type name exactly as declared in MockTest.java, e.g. "OrderMetrics".
+ * @param name - Type name exactly as declared in the mock source file, e.g. "OrderMetrics".
  * @param heuristic - The heuristic category whose prompt should be appended to the system prompt.
+ * @param sourceFile - File under src/test/mockCode to read from. Defaults to "MockTest.java".
  * @throws If the construct cannot be found or context cannot be built.
  */
 export async function analyseConstruct(
   name: string,
   heuristic: HeuristicCategory,
+  sourceFile: string = 'MockTest.java',
 ): Promise<TCResult> {
-  const anchorLine = MOCK_LINES.findIndex((line) =>
+  const mockSource = readMockSource(sourceFile);
+  const mockLines = mockSource.split('\n');
+
+  const anchorLine = mockLines.findIndex((line) =>
     new RegExp(`\\b(class|interface)\\s+${name}\\b`).test(line),
   );
 
   if (anchorLine === -1) {
-    throw new Error(`MockTest.java has no construct named "${name}".`);
+    throw new Error(`${sourceFile} has no construct named "${name}".`);
   }
 
   const context = await buildContextFromSource(
-    MOCK_SOURCE,
+    mockSource,
     anchorLine,
     0,
     'java',
-    'MockTest.java',
+    sourceFile,
   );
 
   if (!context) {
