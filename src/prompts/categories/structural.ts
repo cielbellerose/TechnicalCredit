@@ -1,4 +1,4 @@
-import type { CategoryPrompt } from '@/prompts/heuristics';
+import type { CategoryPrompt } from '@/prompts/categories';
 
 export const prompt: CategoryPrompt<'structural'> = {
   rules: `STRUCTURAL design patterns are Technical Credit when they deliberately compose classes and objects into larger structures behind stable interfaces, so either side can change or be swapped independently.

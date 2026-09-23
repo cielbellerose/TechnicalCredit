@@ -1,7 +1,7 @@
 import * as path from 'path';
 
 import { analyseConstruct } from '@/test/support/analyseLive';
-import type { HeuristicCategory } from '@/prompts/heuristics';
+import type { Category } from '@/prompts/categories';
 
 /**
  * Creational: Prototype — Positive Tests
@@ -13,7 +13,7 @@ import type { HeuristicCategory } from '@/prompts/heuristics';
 jest.setTimeout(60_000);
 const MOCK_FILE = path.join(__dirname, 'Positive.java');
 
-const CATEGORY: HeuristicCategory = 'creational';
+const CATEGORY: Category = 'creational';
 
 describe('Prototype: positive', () => {
   test('Shape → TC (interface declares clone() returning its own type, implemented by Circle)', async () => {

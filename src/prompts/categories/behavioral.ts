@@ -1,4 +1,4 @@
-import type { CategoryPrompt } from '@/prompts/heuristics';
+import type { CategoryPrompt } from '@/prompts/categories';
 
 export const prompt: CategoryPrompt<'behavioral'> = {
   rules: `BEHAVIORAL design patterns are Technical Credit when they deliberately assign responsibilities and communication between objects through stable abstractions, so behaviour can be added, swapped or reordered without changing the objects involved.

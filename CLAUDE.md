@@ -62,7 +62,7 @@ the real Claude API, so every run is billed and takes minutes.
 
 ## Guardrails
 
-- `src/prompts/heuristics/` is tuned by OPRO. Propose prompt changes and wait —
+- `src/prompts/categories/` is tuned by OPRO. Propose prompt changes and wait —
   hand edits silently regress detection quality
 - Never commit `.env`, and never print `ANTHROPIC_API_KEY` into output or logs
 - Ask before adding any npm dependency; the dependency list stays tight

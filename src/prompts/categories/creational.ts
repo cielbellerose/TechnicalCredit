@@ -1,4 +1,4 @@
-import type { CategoryPrompt } from '@/prompts/heuristics';
+import type { CategoryPrompt } from '@/prompts/categories';
 
 export const prompt: CategoryPrompt<'creational'> = {
   rules: `CREATIONAL design patterns are Technical Credit when they deliberately separate how objects are created from the code that uses them, so new products, variants or configurations can be added without changing callers.

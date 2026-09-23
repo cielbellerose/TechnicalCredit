@@ -1,6 +1,6 @@
-import { HEURISTIC_CATEGORIES } from '@/prompts/heuristics';
+import { CATEGORIES } from '@/prompts/categories';
 
-const categoryEnum = HEURISTIC_CATEGORIES.map((c) => `"${c}"`).join('|');
+const categoryEnum = CATEGORIES.map((c) => `"${c}"`).join('|');
 
 export const SYSTEM_PROMPT = `You are a software architecture expert analysing code for Technical Credit (TC) — strategic design decisions that create long-term value for system evolution. TC is the positive counterpart to Technical Debt. You return structured JSON only, no prose.
 

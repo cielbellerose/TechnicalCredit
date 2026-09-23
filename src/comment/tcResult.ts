@@ -4,7 +4,7 @@
  * extracted here for better testability and to decouple from the formatting logic.
  */
 
-import type { DesignPattern, HeuristicCategory } from '@/prompts/heuristics';
+import type { DesignPattern, Category } from '@/prompts/categories';
 
 /** Fields shared by every category's result. */
 interface TCResultFields {
@@ -21,8 +21,8 @@ interface TCResultFields {
  * A union over categories so `design_patterns` can only hold patterns from `category`.
  */
 export type TCResult = {
-  [C in HeuristicCategory]: TCResultFields & {
+  [C in Category]: TCResultFields & {
     category: C;
     design_patterns: DesignPattern<C>[];
   };
-}[HeuristicCategory];
+}[Category];

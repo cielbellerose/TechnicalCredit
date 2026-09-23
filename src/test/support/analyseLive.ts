@@ -6,8 +6,8 @@ import { setExtensionPath } from '../../context/javaParser';
 import { SYSTEM_PROMPT } from '../../prompts/systemPrompt';
 import { createUserPrompt } from '../../prompts/userPrompts';
 import { callClaude } from '../../utils/claude';
-import { createHeuristicPrompt } from '../../prompts/heuristics';
-import type { HeuristicCategory } from '../../prompts/heuristics';
+import { createCategoryPrompt } from '../../prompts/categories';
+import type { Category } from '../../prompts/categories';
 import { TCResult } from '../../comment/tcResult';
 
 setExtensionPath(path.join(__dirname, '../../../'));
@@ -29,17 +29,17 @@ function readMockSource(sourceFile: string): string {
 /**
  * Sends the construct named `name` to Claude using the full production
  * context path (buildContextFromSource → createUserPrompt) and the
- * heuristic-specific system prompt, then returns the parsed TCResult.
+ * category-specific system prompt, then returns the parsed TCResult.
  *
  * @param name - Type name exactly as declared in the mock source file, e.g. "OrderMetrics".
- * @param heuristic - The heuristic category whose prompt should be appended to the system prompt.
+ * @param category - The category whose prompt should be appended to the system prompt.
  * @param sourceFile - File under src/test/mockCode to read from, or an absolute
  *   path to a mock file elsewhere (e.g. next to the test). Defaults to "MockTest.java".
  * @throws If the construct cannot be found or context cannot be built.
  */
 export async function analyseConstruct(
   name: string,
-  heuristic: HeuristicCategory,
+  category: Category,
   sourceFile: string = 'MockTest.java',
 ): Promise<TCResult> {
   const mockSource = readMockSource(sourceFile);
@@ -67,7 +67,7 @@ export async function analyseConstruct(
   }
 
   const userMessage = createUserPrompt(context);
-  const systemMessage = `${SYSTEM_PROMPT}\n\n${createHeuristicPrompt(heuristic)}`;
+  const systemMessage = `${SYSTEM_PROMPT}\n\n${createCategoryPrompt(category)}`;
 
   return callClaude<TCResult>(systemMessage, userMessage);
 }

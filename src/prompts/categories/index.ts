@@ -2,13 +2,9 @@ import { prompt as creational } from './creational';
 import { prompt as structural } from './structural';
 import { prompt as behavioral } from './behavioral';
 
-export const HEURISTIC_CATEGORIES = [
-  'creational',
-  'structural',
-  'behavioral',
-] as const;
+export const CATEGORIES = ['creational', 'structural', 'behavioral'] as const;
 
-export type HeuristicCategory = (typeof HEURISTIC_CATEGORIES)[number];
+export type Category = (typeof CATEGORIES)[number];
 
 /** The Gang of Four design patterns detected within each category. */
 export const DESIGN_PATTERNS = {
@@ -41,27 +37,27 @@ export const DESIGN_PATTERNS = {
     'template-method',
     'visitor',
   ],
-} as const satisfies Record<HeuristicCategory, readonly string[]>;
+} as const satisfies Record<Category, readonly string[]>;
 
 /** A design pattern belonging to category `C` (any category by default). */
-export type DesignPattern<C extends HeuristicCategory = HeuristicCategory> =
+export type DesignPattern<C extends Category = Category> =
   (typeof DESIGN_PATTERNS)[C][number];
 
 /** A category's detection prompt: shared rules plus one section per design pattern. */
-export interface CategoryPrompt<C extends HeuristicCategory> {
+export interface CategoryPrompt<C extends Category> {
   rules: string;
   patterns: Record<DesignPattern<C>, string>;
 }
 
-const categoryPrompts: { [C in HeuristicCategory]: CategoryPrompt<C> } = {
+const categoryPrompts: { [C in Category]: CategoryPrompt<C> } = {
   creational,
   structural,
   behavioral,
 };
 
 /** Returns the raw detection criteria for a category (no category header). Used by OPRO to optimize criteria in isolation. */
-export function getHeuristicCriteria(heuristic: HeuristicCategory): string {
-  const { rules, patterns } = categoryPrompts[heuristic];
+export function getCategoryCriteria(category: Category): string {
+  const { rules, patterns } = categoryPrompts[category];
   const sections = Object.entries(patterns).map(
     ([pattern, criteria]) => `### ${pattern}\n${criteria}`,
   );
@@ -69,7 +65,7 @@ export function getHeuristicCriteria(heuristic: HeuristicCategory): string {
 }
 
 /** Returns the full category prompt including a category header. Use this everywhere outside OPRO. */
-export function createHeuristicPrompt(heuristic: HeuristicCategory): string {
-  const label = heuristic.toUpperCase();
-  return `Detecting: ${label} design patterns as Technical Credit.\n\n${getHeuristicCriteria(heuristic)}`;
+export function createCategoryPrompt(category: Category): string {
+  const label = category.toUpperCase();
+  return `Detecting: ${label} design patterns as Technical Credit.\n\n${getCategoryCriteria(category)}`;
 }
