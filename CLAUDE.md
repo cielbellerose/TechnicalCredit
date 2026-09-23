@@ -32,6 +32,10 @@ the real Claude API, so every run is billed and takes minutes.
 
 ## Pull requests
 
+- Title the PR in Title Case, prefixed with the ticket — e.g.
+  `TC-32 Add CLAUDE.md With Repo Conventions`. Note the contrast with commit
+  messages, whose descriptions stay lowercase
+- Assign the PR to yourself when opening it
 - Fill in every section of `.github/pull_request_template.md`
 - Reference the `TC-<num>` identifier so Linear links the PR to its issue
 - Run `npm run format` before pushing — Prettier covers markdown and JSON, not
