@@ -92,7 +92,7 @@
     "@types/emscripten": "^1.41.5",
     "@types/jest": "^30.0.0",
     "@types/node": "26.x",
-    "@types/vscode": "^1.134.0",
+    "@types/vscode": "^1.138.0",
     "esbuild": "^0.28.1",
     "eslint": "^10.10.0",
     "jest": "^30.5.2",
@@ -103,7 +103,7 @@
     "typescript-eslint": "^8.70.0"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.114.0",
+    "@anthropic-ai/sdk": "^0.127.0",
     "anthropic-ai": "^0.0.10",
     "dotenv": "^17.4.2",
     "tree-sitter-java": "^0.23.5",
