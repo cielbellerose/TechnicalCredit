@@ -26,6 +26,40 @@ function readMockSource(sourceFile: string): string {
   return source;
 }
 
+async function analyseSourceText(
+  name: string,
+  heuristic: HeuristicCategory,
+  source: string,
+  fileName: string,
+): Promise<TCResult> {
+  const lines = source.split('\n');
+
+  const anchorLine = lines.findIndex((line) =>
+    new RegExp(`\\b(class|interface)\\s+${name}\\b`).test(line),
+  );
+
+  if (anchorLine === -1) {
+    throw new Error(`${fileName} has no construct named "${name}".`);
+  }
+
+  const context = await buildContextFromSource(
+    source,
+    anchorLine,
+    0,
+    'java',
+    fileName,
+  );
+
+  if (!context) {
+    throw new Error(`buildContextFromSource returned null for "${name}".`);
+  }
+
+  const userMessage = createUserPrompt(context);
+  const systemMessage = `${SYSTEM_PROMPT}\n\n${createHeuristicPrompt(heuristic)}`;
+
+  return callClaude<TCResult>(systemMessage, userMessage);
+}
+
 /**
  * Sends the construct named `name` to Claude using the full production
  * context path (buildContextFromSource → createUserPrompt) and the
@@ -44,30 +78,27 @@ export async function analyseConstruct(
   sourceFile: string = 'MockTest.java',
 ): Promise<TCResult> {
   const mockSource = readMockSource(sourceFile);
-  const mockLines = mockSource.split('\n');
+  return analyseSourceText(name, heuristic, mockSource, sourceFile);
+}
 
-  const anchorLine = mockLines.findIndex((line) =>
-    new RegExp(`\\b(class|interface)\\s+${name}\\b`).test(line),
-  );
-
-  if (anchorLine === -1) {
-    throw new Error(`${sourceFile} has no construct named "${name}".`);
-  }
-
-  const context = await buildContextFromSource(
-    mockSource,
-    anchorLine,
-    0,
-    'java',
-    sourceFile,
-  );
-
-  if (!context) {
-    throw new Error(`buildContextFromSource returned null for "${name}".`);
-  }
-
-  const userMessage = createUserPrompt(context);
-  const systemMessage = `${SYSTEM_PROMPT}\n\n${createHeuristicPrompt(heuristic)}`;
-
-  return callClaude<TCResult>(systemMessage, userMessage);
+/**
+ * Same as {@link analyseConstruct}, but takes the Java source directly
+ * instead of reading it from src/test/mockCode - for tests whose fixtures
+ * live inline in the test file rather than in a shared mock file.
+ *
+ * Requires ANTHROPIC_API_KEY in the environment.
+ *
+ * @param name - Type name exactly as declared in `source`, e.g. "OrderMetrics".
+ * @param heuristic - The heuristic category whose prompt should be appended to the system prompt.
+ * @param source - Raw Java source containing the construct.
+ * @param fileName - Label used for context/parsing purposes only; no file is read. Defaults to "Mock.java".
+ * @throws If the construct cannot be found or context cannot be built.
+ */
+export async function analyseSource(
+  name: string,
+  heuristic: HeuristicCategory,
+  source: string,
+  fileName: string = 'Mock.java',
+): Promise<TCResult> {
+  return analyseSourceText(name, heuristic, source, fileName);
 }
