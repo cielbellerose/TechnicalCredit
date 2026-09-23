@@ -1,4 +1,4 @@
-// PROTOTYPE (pos): interface declares clone() returning its own type; Circle implements it to copy itself instead of being rebuilt from scratch
+// interface declares clone() returning its own type; Circle implements it to copy itself instead of being rebuilt from scratch
 interface Shape {
     Shape clone();
     void draw();
@@ -20,7 +20,7 @@ class Circle implements Shape {
     }
 }
 
-// PROTOTYPE (pos): abstract class declares clone() returning its own type; Dog extends it to copy itself instead of being rebuilt from scratch
+// abstract class declares clone() returning its own type; Dog extends it to copy itself instead of being rebuilt from scratch
 abstract class Animal {
     abstract Animal clone();
     abstract String describe();
@@ -42,7 +42,7 @@ class Dog extends Animal {
     }
 }
 
-// PROTOTYPE (pos): another interface/implementation pair with the same clone() contract, different domain
+// another interface/implementation pair with the same clone() contract, different domain
 interface Document {
     Document clone();
     String save();

@@ -1,4 +1,4 @@
-// PROTOTYPE (neg): copy constructor plus a "copy"-style method that returns an unrelated type - no shared clone() contract with any interface/abstract class
+// copy constructor plus a "copy"-style method that returns an unrelated type - no shared clone() contract with any interface/abstract class
 class ContactCard {
     private final String name;
     private final String phone;
@@ -28,7 +28,7 @@ class ContactCardSnapshot {
     }
 }
 
-// PROTOTYPE (neg): "copy"-style method takes a different shape (extra parameter) instead of a no-arg clone() contract
+// "copy"-style method takes a different shape (extra parameter) instead of a no-arg clone() contract
 class Invoice {
     private final double amount;
     private final String currency;
@@ -43,7 +43,7 @@ class Invoice {
     }
 }
 
-// PROTOTYPE (neg): plain data holder with only a private copy constructor - no clone() contract, nothing implements/extends it
+// plain data holder with only a private copy constructor - no clone() contract, nothing implements/extends it
 class Point {
     private final int x;
     private final int y;
