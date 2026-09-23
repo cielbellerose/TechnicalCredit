@@ -43,7 +43,28 @@ export async function analyseConstruct(
   heuristic: HeuristicCategory,
   sourceFile: string = 'MockTest.java',
 ): Promise<TCResult> {
-  const mockSource = readMockSource(sourceFile);
+  return analyseSource(readMockSource(sourceFile), name, heuristic, sourceFile);
+}
+
+/**
+ * Same as {@link analyseConstruct}, but takes the Java source directly
+ * instead of reading it from src/test/mockCode, so a test can declare its
+ * input inline next to its assertions.
+ *
+ * Requires ANTHROPIC_API_KEY in the environment.
+ *
+ * @param mockSource - Full Java source containing the construct.
+ * @param name - Type name exactly as declared in `mockSource`, e.g. "DocumentCreator".
+ * @param heuristic - The heuristic category whose prompt should be appended to the system prompt.
+ * @param sourceFile - File name reported to the context builder. Defaults to "Inline.java".
+ * @throws If the construct cannot be found or context cannot be built.
+ */
+export async function analyseSource(
+  mockSource: string,
+  name: string,
+  heuristic: HeuristicCategory,
+  sourceFile: string = 'Inline.java',
+): Promise<TCResult> {
   const mockLines = mockSource.split('\n');
 
   const anchorLine = mockLines.findIndex((line) =>
