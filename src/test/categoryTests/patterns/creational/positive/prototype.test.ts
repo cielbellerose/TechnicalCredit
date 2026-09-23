@@ -1,7 +1,6 @@
-import * as fs from 'fs';
 import * as path from 'path';
 
-import { analyseSource } from '../../../../support/analyseLive';
+import { analyseConstruct } from '@/test/support/analyseLive';
 
 /**
  * Creational: Prototype — Positive Tests
@@ -10,23 +9,17 @@ import { analyseSource } from '../../../../support/analyseLive';
  * its own type, and concrete classes implement it to copy an existing
  * instance instead of being built from scratch.
  *
- * Each test sends one construct from the co-located Prototype.java to Claude
- * for a live analysis and asserts the parsed output.
+ * Each test sends one Prototype.java construct to Claude for a live
+ * analysis and asserts the parsed output.
  *
  * Requires ANTHROPIC_API_KEY
  */
 jest.setTimeout(60_000);
-
-const SOURCE = fs.readFileSync(path.join(__dirname, 'Prototype.java'), 'utf-8');
+const MOCK_FILE = path.join(__dirname, 'Prototype.java');
 
 describe('Prototype: positive', () => {
   test('Shape → TC (declares clone() returning its own type, implemented by Circle)', async () => {
-    const result = await analyseSource(
-      'Shape',
-      'abstraction',
-      SOURCE,
-      'Prototype.java',
-    );
+    const result = await analyseConstruct('Shape', 'abstraction', MOCK_FILE);
 
     expect(result.is_tc_candidate).toBe(true);
     expect(result.category).toBe('abstraction');
