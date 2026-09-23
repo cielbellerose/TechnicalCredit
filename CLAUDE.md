@@ -37,7 +37,8 @@ the real Claude API, so every run is billed and takes minutes.
   messages, whose descriptions stay lowercase
 - Assign the PR to yourself when opening it
 - Fill in every section of `.github/pull_request_template.md`
-- Reference the `TC-<num>` identifier so Linear links the PR to its issue
+- The title's `TC-<num>` prefix is the only ticket reference needed — Linear
+  links the PR through the branch name. Don't add a `Closes` line
 - Run `npm run format` before pushing — Prettier covers markdown and JSON, not
   just `src/`
 - All three checks must pass before review: `tsc-check`, `lint-check`,
