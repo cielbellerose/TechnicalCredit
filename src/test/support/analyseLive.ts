@@ -18,7 +18,7 @@ function readMockSource(sourceFile: string): string {
   let source = mockSourceCache.get(sourceFile);
   if (source === undefined) {
     source = fs.readFileSync(
-      path.join(__dirname, '../mockCode', sourceFile),
+      path.resolve(__dirname, '../mockCode', sourceFile),
       'utf-8',
     );
     mockSourceCache.set(sourceFile, source);
@@ -31,11 +31,10 @@ function readMockSource(sourceFile: string): string {
  * context path (buildContextFromSource → createUserPrompt) and the
  * heuristic-specific system prompt, then returns the parsed TCResult.
  *
- * Requires ANTHROPIC_API_KEY in the environment.
- *
  * @param name - Type name exactly as declared in the mock source file, e.g. "OrderMetrics".
  * @param heuristic - The heuristic category whose prompt should be appended to the system prompt.
- * @param sourceFile - File under src/test/mockCode to read from. Defaults to "MockTest.java".
+ * @param sourceFile - File under src/test/mockCode to read from, or an absolute
+ *   path to a mock file elsewhere (e.g. next to the test). Defaults to "MockTest.java".
  * @throws If the construct cannot be found or context cannot be built.
  */
 export async function analyseConstruct(
@@ -45,13 +44,14 @@ export async function analyseConstruct(
 ): Promise<TCResult> {
   const mockSource = readMockSource(sourceFile);
   const mockLines = mockSource.split('\n');
+  const fileName = path.basename(sourceFile);
 
   const anchorLine = mockLines.findIndex((line) =>
     new RegExp(`\\b(class|interface)\\s+${name}\\b`).test(line),
   );
 
   if (anchorLine === -1) {
-    throw new Error(`${sourceFile} has no construct named "${name}".`);
+    throw new Error(`${fileName} has no construct named "${name}".`);
   }
 
   const context = await buildContextFromSource(
@@ -59,7 +59,7 @@ export async function analyseConstruct(
     anchorLine,
     0,
     'java',
-    sourceFile,
+    fileName,
   );
 
   if (!context) {
