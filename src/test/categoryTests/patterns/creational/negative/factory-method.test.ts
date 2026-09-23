@@ -9,13 +9,16 @@ import { analyseConstruct } from '../../../../support/analyseLive';
  * subclasses extend it to decide which product to instantiate, and the
  * implementation refers to the abstract type.
  *
- * Each test sends one factory-method.java construct to Claude for a live
+ * Each test sends one N02_Factory.java construct to Claude for a live
  * analysis and asserts the parsed output.
  *
  * Requires ANTHROPIC_API_KEY
  */
 jest.setTimeout(60_000);
-const MOCK_FILE = path.join(__dirname, 'factory-method.java');
+const MOCK_FILE = path.join(
+  __dirname,
+  '../../../../creational/negative/N02_Factory.java',
+);
 
 describe('Factory Method: negative', () => {
   test('ReportPrinter → not TC (concrete class directly news a concrete product, no abstract creator)', async () => {
