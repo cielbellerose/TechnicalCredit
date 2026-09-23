@@ -25,7 +25,8 @@ the real Claude API, so every run is billed and takes minutes.
 - Branch from `main`, named `tc-<num>-<kebab-desc>` — e.g. `tc-32-add-claude-md`
 - Commit messages are `TC-<num> lowercase description` — e.g.
   `TC-32 add claude.md with repo conventions`
-- Commit to the feature branch freely as work progresses
+- Commit frequently, in well-sized chunks. One coherent change per commit,
+  landed as the work progresses — not a single large dump at the end
 - **Never push, and never open a PR, unless asked.** Never force-push, and never
   commit directly to `main`
 - Leave `dependabot/*` branches and dependency bumps alone unless asked
