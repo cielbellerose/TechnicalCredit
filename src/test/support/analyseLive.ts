@@ -18,7 +18,7 @@ function readMockSource(sourceFile: string): string {
   let source = mockSourceCache.get(sourceFile);
   if (source === undefined) {
     source = fs.readFileSync(
-      path.join(__dirname, '../mockCode', sourceFile),
+      path.resolve(__dirname, '../mockCode', sourceFile),
       'utf-8',
     );
     mockSourceCache.set(sourceFile, source);
@@ -35,7 +35,8 @@ function readMockSource(sourceFile: string): string {
  *
  * @param name - Type name exactly as declared in the mock source file, e.g. "OrderMetrics".
  * @param heuristic - The heuristic category whose prompt should be appended to the system prompt.
- * @param sourceFile - File under src/test/mockCode to read from. Defaults to "MockTest.java".
+ * @param sourceFile - File under src/test/mockCode to read from, or an absolute
+ *   path to a mock file elsewhere (e.g. next to the test). Defaults to "MockTest.java".
  * @throws If the construct cannot be found or context cannot be built.
  */
 export async function analyseConstruct(
@@ -43,36 +44,16 @@ export async function analyseConstruct(
   heuristic: HeuristicCategory,
   sourceFile: string = 'MockTest.java',
 ): Promise<TCResult> {
-  return analyseSource(readMockSource(sourceFile), name, heuristic, sourceFile);
-}
-
-/**
- * Same as {@link analyseConstruct}, but takes the Java source directly
- * instead of reading it from src/test/mockCode, so a test can declare its
- * input inline next to its assertions.
- *
- * Requires ANTHROPIC_API_KEY in the environment.
- *
- * @param mockSource - Full Java source containing the construct.
- * @param name - Type name exactly as declared in `mockSource`, e.g. "DocumentCreator".
- * @param heuristic - The heuristic category whose prompt should be appended to the system prompt.
- * @param sourceFile - File name reported to the context builder. Defaults to "Inline.java".
- * @throws If the construct cannot be found or context cannot be built.
- */
-export async function analyseSource(
-  mockSource: string,
-  name: string,
-  heuristic: HeuristicCategory,
-  sourceFile: string = 'Inline.java',
-): Promise<TCResult> {
+  const mockSource = readMockSource(sourceFile);
   const mockLines = mockSource.split('\n');
+  const fileName = path.basename(sourceFile);
 
   const anchorLine = mockLines.findIndex((line) =>
     new RegExp(`\\b(class|interface)\\s+${name}\\b`).test(line),
   );
 
   if (anchorLine === -1) {
-    throw new Error(`${sourceFile} has no construct named "${name}".`);
+    throw new Error(`${fileName} has no construct named "${name}".`);
   }
 
   const context = await buildContextFromSource(
@@ -80,7 +61,7 @@ export async function analyseSource(
     anchorLine,
     0,
     'java',
-    sourceFile,
+    fileName,
   );
 
   if (!context) {
