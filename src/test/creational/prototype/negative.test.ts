@@ -13,8 +13,6 @@ import type { HeuristicCategory } from '@/prompts/heuristics';
 jest.setTimeout(60_000);
 const MOCK_FILE = path.join(__dirname, 'Negative.java');
 
-// TODO: 'prototype' isn't a real HeuristicCategory yet - no heuristic prompt
-// exists for it, so these tests will fail until one is added.
 const CATEGORY = 'prototype' as HeuristicCategory;
 
 describe('Prototype: negative', () => {
