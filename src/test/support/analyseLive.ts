@@ -6,8 +6,8 @@ import { setExtensionPath } from '../../context/javaParser';
 import { SYSTEM_PROMPT } from '../../prompts/systemPrompt';
 import { createUserPrompt } from '../../prompts/userPrompts';
 import { callClaude } from '../../utils/claude';
-import { createHeuristicPrompt } from '../../prompts/heuristics';
-import type { HeuristicCategory } from '../../prompts/heuristics';
+import { createCategoryPrompt } from '../../prompts/categories';
+import type { Category } from '../../prompts/categories';
 import { TCResult } from '../../comment/tcResult';
 
 setExtensionPath(path.join(__dirname, '../../../'));
@@ -17,10 +17,7 @@ const mockSourceCache = new Map<string, string>();
 function readMockSource(sourceFile: string): string {
   let source = mockSourceCache.get(sourceFile);
   if (source === undefined) {
-    source = fs.readFileSync(
-      path.resolve(__dirname, '../mockCode', sourceFile),
-      'utf-8',
-    );
+    source = fs.readFileSync(sourceFile, 'utf-8');
     mockSourceCache.set(sourceFile, source);
   }
   return source;
@@ -29,18 +26,18 @@ function readMockSource(sourceFile: string): string {
 /**
  * Sends the construct named `name` to Claude using the full production
  * context path (buildContextFromSource → createUserPrompt) and the
- * heuristic-specific system prompt, then returns the parsed TCResult.
+ * category-specific system prompt, then returns the parsed TCResult.
  *
- * @param name - Type name exactly as declared in the mock source file, e.g. "OrderMetrics".
- * @param heuristic - The heuristic category whose prompt should be appended to the system prompt.
- * @param sourceFile - File under src/test/mockCode to read from, or an absolute
- *   path to a mock file elsewhere (e.g. next to the test). Defaults to "MockTest.java".
+ * @param name - Type name exactly as declared in the mock source file, e.g. "Shape".
+ * @param category - The category whose prompt should be appended to the system prompt.
+ * @param sourceFile - Absolute path to the mock Java file, usually the one next to
+ *   the test, e.g. `path.join(__dirname, 'Positive.java')`.
  * @throws If the construct cannot be found or context cannot be built.
  */
 export async function analyseConstruct(
   name: string,
-  heuristic: HeuristicCategory,
-  sourceFile: string = 'MockTest.java',
+  category: Category,
+  sourceFile: string,
 ): Promise<TCResult> {
   const mockSource = readMockSource(sourceFile);
   const mockLines = mockSource.split('\n');
@@ -67,7 +64,7 @@ export async function analyseConstruct(
   }
 
   const userMessage = createUserPrompt(context);
-  const systemMessage = `${SYSTEM_PROMPT}\n\n${createHeuristicPrompt(heuristic)}`;
+  const systemMessage = `${SYSTEM_PROMPT}\n\n${createCategoryPrompt(category)}`;
 
   return callClaude<TCResult>(systemMessage, userMessage);
 }

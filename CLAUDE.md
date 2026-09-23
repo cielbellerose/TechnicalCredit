@@ -14,10 +14,10 @@ setup instructions. This file covers conventions only.
 - `npm run lint:check` / `npm run lint:fix` — ESLint, zero warnings tolerated
 - `npm run format` / `npm run format:check` — Prettier
 - `npm test` — Jest
-- `npm run opro` — regenerate heuristic prompts via OPRO
+- `npm run opro` — regenerate category prompts via OPRO
 
 `tsc:check`, `lint:check` and `format:check` are fast and free; run them freely to
-verify work. **Do not run `npm test` unless asked** — the live heuristic tests hit
+verify work. **Do not run `npm test` unless asked** — the live category tests hit
 the real Claude API, so every run is billed and takes minutes.
 
 ## Git workflow
@@ -62,7 +62,7 @@ the real Claude API, so every run is billed and takes minutes.
 
 ## Guardrails
 
-- `src/prompts/heuristics/` is tuned by OPRO. Propose prompt changes and wait —
+- `src/prompts/categories/` is tuned by OPRO. Propose prompt changes and wait —
   hand edits silently regress detection quality
 - Never commit `.env`, and never print `ANTHROPIC_API_KEY` into output or logs
 - Ask before adding any npm dependency; the dependency list stays tight

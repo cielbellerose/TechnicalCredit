@@ -9,10 +9,7 @@ import { TCResult } from '@/comment/tcResult';
 import { PendingAnnotation } from '@/comment/pendingAnnotation';
 import { createUserPrompt } from '@/prompts/userPrompts';
 import { ADR_SYSTEM_PROMPT, createAdrUserPrompt } from '@/prompts/adrPrompt';
-import {
-  createHeuristicPrompt,
-  HEURISTIC_CATEGORIES,
-} from '@/prompts/heuristics';
+import { createCategoryPrompt, CATEGORIES } from '@/prompts/categories';
 
 /** Analyses the active editor selection for Technical Credit patterns and previews an annotation if found. */
 export async function analyseForTC(controller: PendingAnnotation) {
@@ -47,12 +44,12 @@ export async function analyseForTC(controller: PendingAnnotation) {
       try {
         const results: TCResult[] = [];
 
-        // Create claude calls for all heuristics
+        // One Claude call per category
         await Promise.all(
-          HEURISTIC_CATEGORIES.map(async (heuristic) => {
-            const heuristicPrompt = createHeuristicPrompt(heuristic);
+          CATEGORIES.map(async (category) => {
+            const categoryPrompt = createCategoryPrompt(category);
             const result = await callClaude<TCResult>(
-              SYSTEM_PROMPT + '\n\n' + heuristicPrompt,
+              SYSTEM_PROMPT + '\n\n' + categoryPrompt,
               userPrompt,
             );
             results.push(result);

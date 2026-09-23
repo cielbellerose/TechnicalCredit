@@ -4,24 +4,25 @@
  * extracted here for better testability and to decouple from the formatting logic.
  */
 
-/** The eight Technical Credit categories the model may assign. */
-export type TCCategory =
-  | 'abstraction'
-  | 'modularity'
-  | 'api-stability'
-  | 'automation'
-  | 'compliance-readiness'
-  | 'configurability'
-  | 'observability'
-  | 'reusability';
+import type { DesignPattern, Category } from '@/prompts/categories';
 
-/** The structured Technical Credit analysis returned by the model. */
-export interface TCResult {
+/** Fields shared by every category's result. */
+interface TCResultFields {
   is_tc_candidate: boolean;
-  category: TCCategory;
   benefit: string;
   conditions: string;
   signals: string[];
   not_tc_reason: string | null;
   adr?: string | null;
 }
+
+/**
+ * The structured Technical Credit analysis returned by the model for one category.
+ * A union over categories so `design_patterns` can only hold patterns from `category`.
+ */
+export type TCResult = {
+  [C in Category]: TCResultFields & {
+    category: C;
+    design_patterns: DesignPattern<C>[];
+  };
+}[Category];
