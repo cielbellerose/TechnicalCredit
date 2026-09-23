@@ -15,7 +15,7 @@ each one inline and are able to **Accept** or **Dismiss** them individually.
 
 ## Project Context
 
-This is the **TC Annotation Project** for Advanced Software Development, by Dharna,
+This is the **TC Annotation Project** for Advanced Software Development, by Dharana,
 Kinsey, Benedikt, and Rowan. The extension is written in **TypeScript** and analyses
 **Java** source code.
 
