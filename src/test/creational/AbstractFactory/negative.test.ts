@@ -22,4 +22,24 @@ describe('Abstract Factory: negative', () => {
 
     expect(result.is_tc_candidate).toBe(false);
   });
+
+  test('ReportBundler → not TC (create methods return different concrete types with no shared interface - not a coherent product family)', async () => {
+    const result = await analyseConstruct(
+      'ReportBundler',
+      'abstraction',
+      MOCK_FILE,
+    );
+
+    expect(result.is_tc_candidate).toBe(false);
+  });
+
+  test('OrderProcessor → not TC (plain business logic class building its own concrete helpers inline, no factory or product abstraction)', async () => {
+    const result = await analyseConstruct(
+      'OrderProcessor',
+      'abstraction',
+      MOCK_FILE,
+    );
+
+    expect(result.is_tc_candidate).toBe(false);
+  });
 });

@@ -30,4 +30,11 @@ describe('Abstract Factory: positive', () => {
     expect(result.is_tc_candidate).toBe(true);
     expect(result.category).toBe('abstraction');
   });
+
+  test('Checkbox → TC (second abstract product interface completing the family GUIFactory produces)', async () => {
+    const result = await analyseConstruct('Checkbox', 'abstraction', MOCK_FILE);
+
+    expect(result.is_tc_candidate).toBe(true);
+    expect(result.category).toBe('abstraction');
+  });
 });
