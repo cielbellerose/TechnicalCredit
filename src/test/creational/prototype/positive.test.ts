@@ -1,6 +1,7 @@
 import * as path from 'path';
 
 import { analyseConstruct } from '@/test/support/analyseLive';
+import type { HeuristicCategory } from '@/prompts/heuristics';
 
 /**
  * Creational: Prototype — Positive Tests
@@ -12,25 +13,29 @@ import { analyseConstruct } from '@/test/support/analyseLive';
 jest.setTimeout(60_000);
 const MOCK_FILE = path.join(__dirname, 'Positive.java');
 
+// TODO: 'prototype' isn't a real HeuristicCategory yet - no heuristic prompt
+// exists for it, so these tests will fail until one is added.
+const CATEGORY = 'prototype' as HeuristicCategory;
+
 describe('Prototype: positive', () => {
   test('Shape → TC (interface declares clone() returning its own type, implemented by Circle)', async () => {
-    const result = await analyseConstruct('Shape', 'abstraction', MOCK_FILE);
+    const result = await analyseConstruct('Shape', CATEGORY, MOCK_FILE);
 
     expect(result.is_tc_candidate).toBe(true);
-    expect(result.category).toBe('abstraction');
+    expect(result.category).toBe('prototype');
   });
 
   test('Animal → TC (abstract class declares clone() returning its own type, extended by Dog)', async () => {
-    const result = await analyseConstruct('Animal', 'abstraction', MOCK_FILE);
+    const result = await analyseConstruct('Animal', CATEGORY, MOCK_FILE);
 
     expect(result.is_tc_candidate).toBe(true);
-    expect(result.category).toBe('abstraction');
+    expect(result.category).toBe('prototype');
   });
 
   test('Document → TC (interface declares clone() returning its own type, implemented by TextDocument)', async () => {
-    const result = await analyseConstruct('Document', 'abstraction', MOCK_FILE);
+    const result = await analyseConstruct('Document', CATEGORY, MOCK_FILE);
 
     expect(result.is_tc_candidate).toBe(true);
-    expect(result.category).toBe('abstraction');
+    expect(result.category).toBe('prototype');
   });
 });
