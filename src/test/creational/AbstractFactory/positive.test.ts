@@ -10,7 +10,7 @@ import { analyseConstruct } from '@/test/support/analyseLive';
  * product interfaces implemented by the concrete products those factories return.
  */
 jest.setTimeout(60_000);
-const MOCK_FILE = path.join(__dirname, 'P01_Abstract.java');
+const MOCK_FILE = path.join(__dirname, 'Positive.java');
 
 describe('Abstract Factory: positive', () => {
   test('GUIFactory → TC (top-level factory interface implemented by WinFactory/MacFactory, each producing a matched product family)', async () => {

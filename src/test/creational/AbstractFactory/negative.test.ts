@@ -10,7 +10,7 @@ import { analyseConstruct } from '@/test/support/analyseLive';
  * product interfaces implemented by the concrete products those factories return.
  */
 jest.setTimeout(60_000);
-const MOCK_FILE = path.join(__dirname, 'N01_Abstract.java');
+const MOCK_FILE = path.join(__dirname, 'Negative.java');
 
 describe('Abstract Factory: negative', () => {
   test('ConnectionFactory → not TC (factory-shaped class directly news a single concrete, unrelated type, no shared product interface)', async () => {
