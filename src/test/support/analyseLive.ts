@@ -17,10 +17,7 @@ const mockSourceCache = new Map<string, string>();
 function readMockSource(sourceFile: string): string {
   let source = mockSourceCache.get(sourceFile);
   if (source === undefined) {
-    source = fs.readFileSync(
-      path.resolve(__dirname, '../mockCode', sourceFile),
-      'utf-8',
-    );
+    source = fs.readFileSync(sourceFile, 'utf-8');
     mockSourceCache.set(sourceFile, source);
   }
   return source;
@@ -31,16 +28,16 @@ function readMockSource(sourceFile: string): string {
  * context path (buildContextFromSource → createUserPrompt) and the
  * category-specific system prompt, then returns the parsed TCResult.
  *
- * @param name - Type name exactly as declared in the mock source file, e.g. "OrderMetrics".
+ * @param name - Type name exactly as declared in the mock source file, e.g. "Shape".
  * @param category - The category whose prompt should be appended to the system prompt.
- * @param sourceFile - File under src/test/mockCode to read from, or an absolute
- *   path to a mock file elsewhere (e.g. next to the test). Defaults to "MockTest.java".
+ * @param sourceFile - Absolute path to the mock Java file, usually the one next to
+ *   the test, e.g. `path.join(__dirname, 'Positive.java')`.
  * @throws If the construct cannot be found or context cannot be built.
  */
 export async function analyseConstruct(
   name: string,
   category: Category,
-  sourceFile: string = 'MockTest.java',
+  sourceFile: string,
 ): Promise<TCResult> {
   const mockSource = readMockSource(sourceFile);
   const mockLines = mockSource.split('\n');
