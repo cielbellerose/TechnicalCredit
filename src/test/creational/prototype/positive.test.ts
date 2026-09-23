@@ -10,7 +10,7 @@ import { analyseConstruct } from '@/test/support/analyseLive';
  * existing instance instead of being built from scratch.
  */
 jest.setTimeout(60_000);
-const MOCK_FILE = path.join(__dirname, 'Prototype.java');
+const MOCK_FILE = path.join(__dirname, 'Positive.java');
 
 describe('Prototype: positive', () => {
   test('Shape → TC (interface declares clone() returning its own type, implemented by Circle)', async () => {

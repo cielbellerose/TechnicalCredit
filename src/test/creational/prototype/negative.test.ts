@@ -10,7 +10,7 @@ import { analyseConstruct } from '@/test/support/analyseLive';
  * existing instance instead of being built from scratch.
  */
 jest.setTimeout(60_000);
-const MOCK_FILE = path.join(__dirname, 'Prototype.java');
+const MOCK_FILE = path.join(__dirname, 'Negative.java');
 
 describe('Prototype: negative', () => {
   test('ContactCard → not TC (copy constructor + snapshot() returning an unrelated type, no clone() contract)', async () => {
