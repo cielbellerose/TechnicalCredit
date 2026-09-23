@@ -31,8 +31,6 @@ function readMockSource(sourceFile: string): string {
  * context path (buildContextFromSource → createUserPrompt) and the
  * heuristic-specific system prompt, then returns the parsed TCResult.
  *
- * Requires ANTHROPIC_API_KEY in the environment.
- *
  * @param name - Type name exactly as declared in the mock source file, e.g. "OrderMetrics".
  * @param heuristic - The heuristic category whose prompt should be appended to the system prompt.
  * @param sourceFile - File under src/test/mockCode to read from, or an absolute
