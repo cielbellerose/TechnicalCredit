@@ -1,43 +1,75 @@
-import { prompt as abstraction } from './abstraction';
-import { prompt as modularity } from './modularity';
-import { prompt as apiStability } from './api-stability';
-import { prompt as automation } from './automation';
-import { prompt as configurability } from './configurability';
-import { prompt as observability } from './observability';
-import { prompt as reusability } from './reusability';
-import { prompt as complianceReadiness } from './compliance-readiness';
+import { prompt as creational } from './creational';
+import { prompt as structural } from './structural';
+import { prompt as behavioral } from './behavioral';
 
 export const HEURISTIC_CATEGORIES = [
-  'abstraction',
-  'modularity',
-  'api-stability',
-  'automation',
-  'configurability',
-  'observability',
-  'reusability',
-  'compliance-readiness',
+  'creational',
+  'structural',
+  'behavioral',
 ] as const;
 
 export type HeuristicCategory = (typeof HEURISTIC_CATEGORIES)[number];
 
-const heuristicPrompts: Record<HeuristicCategory, string> = {
-  abstraction,
-  modularity,
-  'api-stability': apiStability,
-  automation,
-  configurability,
-  observability,
-  reusability,
-  'compliance-readiness': complianceReadiness,
-};
+/** The Gang of Four design patterns detected within each category. */
+export const DESIGN_PATTERNS = {
+  creational: [
+    'singleton',
+    'abstract-factory',
+    'factory-method',
+    'prototype',
+    'builder',
+  ],
+  structural: [
+    'adapter',
+    'bridge',
+    'composite',
+    'decorator',
+    'facade',
+    'flyweight',
+    'proxy',
+  ],
+  behavioral: [
+    'chain-of-responsibility',
+    'command',
+    'interpreter',
+    'iterator',
+    'mediator',
+    'memento',
+    'observer',
+    'state',
+    'strategy',
+    'template-method',
+    'visitor',
+  ],
+} as const satisfies Record<HeuristicCategory, readonly string[]>;
 
-/** Returns the raw detection criteria for a heuristic (no category header). Used by OPRO to optimize criteria in isolation. */
-export function getHeuristicCriteria(heuristic: HeuristicCategory): string {
-  return heuristicPrompts[heuristic];
+/** A design pattern belonging to category `C` (any category by default). */
+export type DesignPattern<C extends HeuristicCategory = HeuristicCategory> =
+  (typeof DESIGN_PATTERNS)[C][number];
+
+/** A category's detection prompt: shared rules plus one section per design pattern. */
+export interface CategoryPrompt<C extends HeuristicCategory> {
+  rules: string;
+  patterns: Record<DesignPattern<C>, string>;
 }
 
-/** Returns the full heuristic prompt including a category header. Use this everywhere outside OPRO. */
+const categoryPrompts: { [C in HeuristicCategory]: CategoryPrompt<C> } = {
+  creational,
+  structural,
+  behavioral,
+};
+
+/** Returns the raw detection criteria for a category (no category header). Used by OPRO to optimize criteria in isolation. */
+export function getHeuristicCriteria(heuristic: HeuristicCategory): string {
+  const { rules, patterns } = categoryPrompts[heuristic];
+  const sections = Object.entries(patterns).map(
+    ([pattern, criteria]) => `### ${pattern}\n${criteria}`,
+  );
+  return `${rules}\n\n## Design Patterns\n\n${sections.join('\n\n')}`;
+}
+
+/** Returns the full category prompt including a category header. Use this everywhere outside OPRO. */
 export function createHeuristicPrompt(heuristic: HeuristicCategory): string {
-  const label = heuristic.toUpperCase().replace(/-/g, ' ');
-  return `Detecting: ${label} Technical Credit.\n\n${heuristicPrompts[heuristic]}`;
+  const label = heuristic.toUpperCase();
+  return `Detecting: ${label} design patterns as Technical Credit.\n\n${getHeuristicCriteria(heuristic)}`;
 }

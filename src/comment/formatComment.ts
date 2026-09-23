@@ -38,6 +38,7 @@ export function formatTCComment(result: TCResult, indent: string): string {
   const fields = [
     `benefit: ${quote(result.benefit)},`,
     `category: ${quote(result.category)},`,
+    `designPatterns: [${result.design_patterns.map(quote).join(', ')}],`,
     `conditions: ${quote(result.conditions)},`,
     `signals: [${result.signals.map(quote).join(', ')}],`,
     ...(result.adr ? [`adr: ${quote(result.adr)},`] : []),
