@@ -16,7 +16,7 @@ describe('Abstract Factory: negative', () => {
   test('ConnectionFactory → not TC (factory-shaped class directly news a single concrete, unrelated type, no shared product interface)', async () => {
     const result = await analyseConstruct(
       'ConnectionFactory',
-      'abstraction',
+      'abstract',
       MOCK_FILE,
     );
 
@@ -26,7 +26,7 @@ describe('Abstract Factory: negative', () => {
   test('ReportBundler → not TC (create methods return different concrete types with no shared interface - not a coherent product family)', async () => {
     const result = await analyseConstruct(
       'ReportBundler',
-      'abstraction',
+      'abstract',
       MOCK_FILE,
     );
 
@@ -36,7 +36,7 @@ describe('Abstract Factory: negative', () => {
   test('OrderProcessor → not TC (plain business logic class building its own concrete helpers inline, no factory or product abstraction)', async () => {
     const result = await analyseConstruct(
       'OrderProcessor',
-      'abstraction',
+      'abstract',
       MOCK_FILE,
     );
 
