@@ -10,7 +10,7 @@ class HtmlDocument implements Document {
     public String render(String title) { return "<h1>" + title + "</h1>"; }
 }
 
-// FACTORY METHOD (pos): abstract creator declares the factory method; subclasses decide which Document to instantiate
+// abstract creator declares the factory method; subclasses decide which Document to instantiate
 abstract class DocumentCreator {
     protected abstract Document createDocument();
 
@@ -41,7 +41,7 @@ class WebButton implements Button {
     public String draw() { return "<button/>"; }
 }
 
-// FACTORY METHOD (pos): the creator's business logic only ever sees the abstract Button returned by the factory method
+// the creator's business logic only ever sees the abstract Button returned by the factory method
 abstract class Dialog {
     protected abstract Button createButton();
 
@@ -75,7 +75,7 @@ class FileLogger implements Logger {
     public void log(String message) { /* append to name + ".log" */ }
 }
 
-// FACTORY METHOD (pos): parameterised factory method; the base class caches whatever the subclass creates
+// parameterised factory method; the base class caches whatever the subclass creates
 abstract class LoggerProvider {
     private final java.util.Map<String, Logger> cache = new java.util.HashMap<>();
 

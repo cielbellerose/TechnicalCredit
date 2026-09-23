@@ -1,23 +1,23 @@
 import * as path from 'path';
 
 import { analyseConstruct } from '@/test/support/analyseLive';
+import type { HeuristicCategory } from '@/prompts/heuristics';
 
 /**
- * Creational: Factory Method — negative tests. Each test sends one
- * N02_Factory.java construct to Claude for a live analysis.
+ * Creational: Factory Method — Negative Tests
  *
- * Requires ANTHROPIC_API_KEY
+ * Looking for: an abstract creator class with an abstract factory method,
+ * extended by concrete creators that decide which product to instantiate,
+ * while the creator's own logic only refers to the abstract product.
  */
 jest.setTimeout(60_000);
-const MOCK_FILE = path.join(__dirname, 'N02_Factory.java');
+const MOCK_FILE = path.join(__dirname, 'Negative.java');
+
+const CATEGORY = 'factory-method' as HeuristicCategory;
 
 describe('Factory Method: negative', () => {
   test('ReportPrinter → not TC (concrete class directly news a concrete product, no abstract creator)', async () => {
-    const result = await analyseConstruct(
-      'ReportPrinter',
-      'abstraction',
-      MOCK_FILE,
-    );
+    const result = await analyseConstruct('ReportPrinter', CATEGORY, MOCK_FILE);
 
     expect(result.is_tc_candidate).toBe(false);
   });
@@ -25,7 +25,7 @@ describe('Factory Method: negative', () => {
   test('InvoiceService → not TC (createInvoice() is concrete and never overridden)', async () => {
     const result = await analyseConstruct(
       'InvoiceService',
-      'abstraction',
+      CATEGORY,
       MOCK_FILE,
     );
 
@@ -33,11 +33,7 @@ describe('Factory Method: negative', () => {
   });
 
   test('ShapeFactory → not TC (static simple factory, no abstract creator or subclassing)', async () => {
-    const result = await analyseConstruct(
-      'ShapeFactory',
-      'abstraction',
-      MOCK_FILE,
-    );
+    const result = await analyseConstruct('ShapeFactory', CATEGORY, MOCK_FILE);
 
     expect(result.is_tc_candidate).toBe(false);
   });

@@ -2,7 +2,7 @@ class PdfDocument {
     public String render(String title) { return "%PDF " + title; }
 }
 
-// FACTORY METHOD (neg): concrete class directly news a concrete product — no abstract creator, no subclassing
+// concrete class directly news a concrete product — no abstract creator, no subclassing
 class ReportPrinter {
     public String print(String title) {
         PdfDocument document = new PdfDocument();
@@ -16,7 +16,7 @@ class Invoice {
     double getAmount() { return amount; }
 }
 
-// FACTORY METHOD (neg): createInvoice() is named like a factory method, but it's concrete and nothing overrides it
+// createInvoice() is named like a factory method, but it's concrete and nothing overrides it
 class InvoiceService {
     public Invoice createInvoice(double amount) {
         return new Invoice(amount);
@@ -39,7 +39,7 @@ class Square {
     double area(double s) { return s * s; }
 }
 
-// FACTORY METHOD (neg): static "simple factory" — a switch over concrete types, no abstract creator for subclasses to extend
+// static "simple factory" — a switch over concrete types, no abstract creator for subclasses to extend
 class ShapeFactory {
     public static Object create(String type) {
         switch (type) {
